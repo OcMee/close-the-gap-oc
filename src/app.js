@@ -112,7 +112,7 @@ function readySection() {
     steps.push("Pull your credit reports and fix errors before you apply.");
     next.replaceChildren(...steps.map((t) => el("li", { text: t })));
   });
-  return section("ready", "Ready", "Is this family ready, and what is the gap?", "An early check for a family or the counselor sitting with them. Answers stay on this device. Use made-up numbers in a demo.",
+  return section("ready", "1. Ready", "Is this family ready, and what is the gap?", "An early check for a family or the counselor sitting with them. Answers stay on this device. Use made-up numbers in a demo.",
     el("div", { class: "grid" },
       el("div", {},
         numberField("People in the household", () => R.size, (v) => { R.size = Math.round(v); }, { min: 1, max: 8, step: 1 }),
@@ -143,7 +143,7 @@ function leversSection() {
     hours.v.textContent = b.total.toLocaleString("en-US");
     hours.n.textContent = `${S.build.homes} homes, ${S.build.adults} adults each, ${S.build.hours} hours per adult`;
   });
-  return section("levers", "Together", "What the city and neighbors can do", "Land is the biggest line in the example deal. Fees and delay add up. Build Days turn neighbors and families into a crew.",
+  return section("levers", "Together: city and neighbors", "What the city and neighbors can do", "Land is the biggest line in the example deal. Fees and delay add up. Build Days turn neighbors and families into a crew.",
     el("div", { class: "grid" },
       el("div", {},
         rangeField("City land: share offered free or leased", () => S.levers.landPct, (v) => { S.levers.landPct = v; }, { min: 0, max: 100, step: 5, fmt: (v) => `${v}%`, note: "A lever to ask each city about. We did not confirm any city offer." }),
@@ -210,7 +210,7 @@ function hero() {
 function homeSection() {
   const total = big("Cost to deliver one home");
   subs.push((r) => { total.v.textContent = money(r.totalCost); total.n.textContent = r.slip ? `Includes ${money(r.slip)} from a ${S.slip}-month delay` : "No delay included"; });
-  return section("home", "1. The home", "What it costs to deliver", "From the lane's made-up example deal. Change any line to match a real project, and label it.",
+  return section("home", "Together: the home", "What it costs to deliver", "From the lane's made-up example deal. Change any line to match a real project, and label it.",
     el("div", { class: "grid" },
       el("div", {}, S.deal.map((l) => numberField(l.label, () => l.amount, (v) => { l.amount = v; }, { step: 1000, prefix: "$", status: "assumption" }))),
       el("div", {}, total.node,
@@ -231,7 +231,7 @@ function familySection() {
   });
   const tierSel = el("select", { id: "tier", onchange: (e) => set(() => { S.tier = e.target.value; }) }, TIERS.map((t) => el("option", { value: t.key, text: t.label })));
   tierSel.value = S.tier;
-  return section("family", "2. The family", "What the family can legally pay", "California sets the affordable housing cost by income group, not by the family's exact income. We price at the cap.",
+  return section("family", "Together: the family", "What the family can legally pay", "California sets the affordable housing cost by income group, not by the family's exact income. We price at the cap.",
     el("div", { class: "grid" },
       el("div", {},
         el("div", { class: "field" }, el("label", { for: "tier" }, "Income group", tag("verified")), tierSel),
@@ -290,7 +290,7 @@ function stackSection() {
       numberField(f.name, () => f.amount, (v) => { f.amount = v; }, { step: 1000, prefix: "$", status: "assumption", note: f.note }),
       el("label", { class: "tick", for: cid }, el("input", { id: cid, type: "checkbox", checked: f.confirmed, onchange: (e) => set(() => { f.confirmed = e.target.checked; }) }), "Confirmed (awarded or signed)"));
   });
-  return section("stack", "3. The stack", "Who closes the gap", "Help to the buyer raises what the family can pay. Money to the project lowers what is left. Unconfirmed money is shown apart, because a gap is only closed when the money is signed.",
+  return section("stack", "Together: the stack", "Who closes the gap", "Help to the buyer raises what the family can pay. Money to the project lowers what is left. Unconfirmed money is shown apart, because a gap is only closed when the money is signed.",
     el("div", { class: "field narrow" }, el("label", { for: "city" }, "Where is the home?"), citySel),
     el("h3", { text: "Help to the buyer" }), cards,
     el("p", { class: "note warn", text: "Whether these programs combine is not confirmed. Each one caps total borrowing, and the lender and city decide. Treat the stack as a question to ask, not an answer." }),
@@ -325,7 +325,7 @@ function rateSection() {
     table.replaceChildren(el("thead", {}, el("tr", {}, el("th", { text: "Rate" }), el("th", { text: "Family can pay" }), el("th", { text: "Gap left" }))),
       el("tbody", {}, curve.map((c) => el("tr", {}, el("td", { text: `${c.rate}%` }), el("td", { text: money(c.price) }), el("td", { text: money(c.gap) })))));
   });
-  return section("rates", "4. Rates", "When the rate moves, the gap moves", "Same family, same help. Only the mortgage rate changes. The dot is the rate set above.",
+  return section("rates", "Together: rates", "When the rate moves, the gap moves", "Same family, same help. Only the mortgage rate changes. The dot is the rate set above.",
     chart, text, el("details", { class: "more" }, el("summary", { text: "Show as a table" }), table), el("p", { class: "note" }, "Rate: Freddie Mac 30-year fixed. ", tag("verified"), " ", src("fred")));
 }
 
@@ -342,7 +342,7 @@ function giveSection() {
     homes.n.textContent = "At this gap per home";
     say.textContent = `${money(v.gift)} pays for roughly: ${v.lines.map((l) => `${money(l.amount)} of ${l.label.toLowerCase()}`).join(", ")}. Split in proportion to the cost lines, which are ASSUMPTION.`;
   });
-  return section("give", "5. Give", "What a gift does", "For a donor or a business that wants to see where the money goes.",
+  return section("give", "3. Give", "What a gift does", "For a donor or a business that wants to see where the money goes.",
     el("div", { class: "grid" },
       el("div", {}, numberField("Gift", () => S.gift, (v) => { S.gift = v; }, { step: 1000, prefix: "$" }), say),
       el("div", {}, share.node, homes.node)),
@@ -368,16 +368,28 @@ function sourcesSection() {
     ["Citizenship rules for Santa Ana, Garden Grove and Anaheim programs", "unknown", null],
     ["County MAP covers 14 smaller cities plus unincorporated areas; the tool lists 5", "partly", SOURCES.map.url],
   ];
-  return section("sources", "6. Sources and assumptions", "Every number, where it came from", `Checked ${CHECKED}. When a source does not say, the tool says "We do not know".`,
+  return section("sources", "Sources and assumptions", "Every number, where it came from", `Checked ${CHECKED}. When a source does not say, the tool says "We do not know".`,
     el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "Item" }), el("th", { text: "Status" }), el("th", { text: "Link" }))),
       el("tbody", {}, rows.map(([label, status, url]) => el("tr", {}, el("td", { text: label }), el("td", {}, tag(status)), el("td", {}, url ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "Open" }) : "None"))))));
 }
 
 function intro() {
+  const letters = [
+    ["O C", "Orange County", "Where the people who work here can live here."],
+    ["M", "Mortgage", "A way in for working families. Ready."],
+    ["E", "Equity", "Homes that build wealth and stay affordable. Together."],
+    ["E", "Education", "Classes, counseling and sweat equity. Ready and Together."],
+    ["D", "Design", "The plan that puts it together, with every number sourced. Give."],
+  ];
   return el("section", { class: "intro" },
-    el("p", { class: "kicker", text: "Ready. Together. Give." }),
-    el("h1", {}, "Every working family a way in. ", el("em", { text: "Every neighbor a way to help." })),
-    el("p", { class: "lead", text: "Ready checks one family's path. Together shows a city or nonprofit what it costs to deliver an affordable home and who closes the gap. Give shows a donor or business exactly what their help does. Same sources, one story." }));
+    el("p", { class: "eyebrow", text: "OCMEE Design presents" }),
+    el("h1", {}, "The Affordable Home ", el("em", { text: "Initiative" })),
+    el("p", { class: "motto" }, "Every working family a way in. ", el("em", { text: "Every neighbor a way to help." })),
+    el("p", { class: "lead", text: "Ready checks one family's path. Together shows a city or nonprofit what it costs to deliver an affordable home and who closes the gap. Give shows a donor or business exactly what their help does. Same sources, one story." }),
+    el("div", { class: "acronym" },
+      el("p", { class: "acronym-title" }, "What ", el("b", { text: "OCMEED" }), " stands for"),
+      el("ol", { class: "letters" }, letters.map(([l, w, d]) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: w }), el("span", { class: "d", text: d })))),
+      el("p", { class: "byline" }, "Orange County Mortgage, Equity and Education, ", el("em", { text: "by Design." }), " Affordable homes do not happen by accident.")));
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
