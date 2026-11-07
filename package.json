@@ -5,6 +5,6 @@
   "type": "module",
   "description": "Gap calculator for one affordable Orange County home. No dependencies.",
   "engines": { "node": ">=18" },
-  "scripts": { "test": "node --test tests/gap.test.mjs tests/doccheck.test.mjs" },
+  "scripts": { "test": "node --test tests/gap.test.mjs tests/doccheck.test.mjs tests/docx.test.mjs" },
   "license": "MIT"
 }

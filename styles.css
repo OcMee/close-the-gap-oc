@@ -335,3 +335,46 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 
 /* GOD letters on the slips */
 .slip-n { font-size: 30px; width: 56px; height: 56px; }
+
+/* Floating program atlas (Ready) */
+.pa { margin-top: 16px; padding: 16px; border: 1px solid var(--hair); border-radius: 16px; background: radial-gradient(circle at 50% 50%, #fff 0%, #f6f6f3 70%); }
+.pa-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; align-items: baseline; }
+.pa-head .lab { font-size: 14px; font-weight: 700; color: #1a1a1a; }
+.pa-count { margin: 0; font-size: 13px; color: var(--muted); }
+.pa-svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pa-link { stroke: #d4d4cf; stroke-width: 1; }
+.pa-link.on { stroke: var(--orange); stroke-width: 2; }
+.pa-link.ask { stroke: #f5c08a; stroke-dasharray: 4 4; }
+.pa-node { cursor: pointer; outline: none; }
+.pa-node circle { transition: r .2s; }
+.k-family circle:last-of-type { fill: #1a1a1a; stroke: var(--orange); stroke-width: 4; }
+.k-family .pa-glow { fill: rgba(255,135,16,.14); stroke: none; }
+.pa-in { fill: #fff; font-size: 12px; font-weight: 800; text-anchor: middle; }
+.pa-in.small { fill: var(--orange); font-size: 13px; }
+.k-hub circle { fill: #fff; stroke: #1a1a1a; stroke-width: 4; }
+.v-fit circle { fill: var(--orange); stroke: #fff; stroke-width: 3; }
+.v-check circle { fill: #fff; stroke: var(--orange); stroke-width: 2.5; stroke-dasharray: 3 2; }
+.v-no circle, .v-closed circle { fill: #cfcfca; stroke: #fff; stroke-width: 2; opacity: .6; }
+.v-closed circle { fill: #fff; stroke: #b5b5b0; stroke-dasharray: 2 2; }
+.pa-label { font-size: 11px; font-weight: 700; fill: #1a1a1a; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.pa-label.hub { font-size: 12px; font-weight: 800; }
+.pa-node:hover circle, .pa-node:focus-visible circle { stroke: #1a1a1a; stroke-width: 3; opacity: 1; }
+.pa-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+.pa-legend .dot { display: inline-block; width: 12px; height: 12px; margin-right: 4px; border-radius: 50%; vertical-align: middle; }
+.dot.fit { background: var(--orange); }
+.dot.check { border: 2px dashed var(--orange); background: #fff; }
+.dot.no { background: #cfcfca; }
+.pa-cap { min-height: 44px; margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: #fff; border: 1px solid var(--hair); font-size: 14px; }
+
+.doc-thumb { display: block; width: 100%; height: 140px; object-fit: cover; margin: 8px 0; border-radius: 8px; border: 1px solid var(--hair); }
+
+/* Atlas: half a page */
+.pa { margin: 24px 0 8px; padding: 20px 24px; }
+.pa-svg { height: min(56vh, 560px); min-height: 340px; }
+.pa-label { font-size: 15px; }
+.pa-label.hub { font-size: 17px; }
+.pa-label.dim { fill: #8a8a85; font-weight: 600; font-size: 13px; }
+.pa-in { font-size: 16px; }
+.pa-in.small { font-size: 17px; }
+.pa-head .lab { font-size: 18px; }
+.pa-legend .dot { flex: none; }
