@@ -216,3 +216,24 @@ export function pledgeView({ hours, money, gap }, hoursPerDay = 8) {
     homesClosed: g > 0 ? pos(money) / g : 0,
   };
 }
+
+// MORTGAGE ATLAS: does a loan type fit this family? "fit", "check" or "no", with reasons.
+export function mortgageFit(m, { credit, residency, downPct, loan, veteran, selfEmployed, firstTime, income }) {
+  const reasons = [];
+  let verdict = "fit";
+  const no = (t) => { reasons.push({ ok: false, text: t }); verdict = "no"; };
+  const ask = (t) => { reasons.push({ ok: null, text: t }); if (verdict === "fit") verdict = "check"; };
+  if (m.residency === "vet" && !veteran) no("For veterans and service members.");
+  if (m.residency === "green" && residency === "other") no("Citizens and green card holders only.");
+  if (m.credit && pos(credit) < m.credit) no(`Needs a credit score of about ${m.credit}.`);
+  if (m.minDown && pos(downPct) < m.minDown) no(`Needs about ${m.minDown}% down.`);
+  if (m.maxLoan && pos(loan) > m.maxLoan) no(`Loan over the $${m.maxLoan.toLocaleString("en-US")} limit.`);
+  if (m.minLoan && pos(loan) < m.minLoan) no(`For loans over $${(m.minLoan - 1).toLocaleString("en-US")}.`);
+  if (m.incomeCap && pos(income) > m.incomeCap) no(`Income over the $${m.incomeCap.toLocaleString("en-US")} limit.`);
+  if (m.firstTime && !firstTime) no("First-time buyers only.");
+  if (m.selfEmployed && !selfEmployed) no("Meant for self-employed buyers.");
+  if (m.rural) ask("Only in USDA rural areas. Check the address.");
+  if (m.certainty === "general") ask("General guidance. Each lender sets its own rules.");
+  if (verdict === "fit") reasons.push({ ok: true, text: "Fits these answers." });
+  return { verdict, reasons };
+}

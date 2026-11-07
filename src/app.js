@@ -1,6 +1,6 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
-import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS } from "./data.js";
-import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView } from "./gap.js";
+import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
+import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit } from "./gap.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 function el(tag, attrs = {}, ...kids) {
@@ -35,6 +35,7 @@ const S = {
   funds: PROJECT_FUNDS.map((f) => ({ ...f, confirmed: false })),
   ready: { size: 4, income: 118000, debts: 500, rent: 2700, city: "Santa Ana", residency: "citizen", firstTime: true, credit: 690, savings: 15000, jobYears: 3 },
   pledge: { hours: 40, skill: "none", materials: 0, money: 25000 },
+  atlas: { downPct: 3.5, veteran: false, selfEmployed: false },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -456,6 +457,46 @@ function pillarsSection() {
     el("p", { class: "note", text: "Volunteer hours help build homes; families earn their own sweat equity. Ask Habitat OC or your chosen nonprofit how they count gifts of time and materials. Ask your tax advisor how a gift is deducted." }));
 }
 
+
+// READY: the mortgage atlas. Every main loan type, and which ones fit this family.
+function atlasSection() {
+  const A = S.atlas;
+  const grid = el("div", { class: "atlas" });
+  const count = el("p", { class: "answer small", role: "status" });
+  const toggle = (key, label) => el("label", { class: "tick" }, el("input", { type: "checkbox", checked: A[key], onchange: (e) => set(() => { A[key] = e.target.checked; }) }), label);
+  const LABEL = { fit: "Fits", check: "Check with a lender", no: "Not for now" };
+  subs.push(() => {
+    const R = S.ready;
+    const ready = readyCheck({ ...R, ratePct: S.rate, assume: S.assume });
+    const price = ready.helped.price;
+    const loan = price * (1 - A.downPct / 100);
+    const fam = { credit: R.credit, residency: R.residency, downPct: A.downPct, loan, veteran: A.veteran, selfEmployed: A.selfEmployed, firstTime: R.firstTime, income: R.income };
+    const rows = MORTGAGES.map((m) => ({ m, ...mortgageFit(m, fam) }));
+    const fits = rows.filter((r) => r.verdict === "fit").length;
+    const checks = rows.filter((r) => r.verdict === "check").length;
+    count.textContent = `For a ${money(price)} home with ${A.downPct}% down (a ${money(loan)} loan): ${fits} loan types fit, ${checks} to check with a lender, ${rows.length - fits - checks} not for now.`;
+    const families = [...new Set(MORTGAGES.map((m) => m.family))];
+    grid.replaceChildren(...families.map((fam2) => el("div", { class: "atlas-group" }, el("h3", { text: { Conventional: "Conventional loans", Government: "Government loans", State: "State and agency programs", Special: "Special situations" }[fam2] || fam2 }),
+      el("div", { class: "atlas-grid" }, rows.filter((r) => r.m.family === fam2).map((r) => el("article", { class: `loan v-${r.verdict}` },
+        el("div", { class: "row" }, el("b", { text: r.m.name }), el("span", { class: `fit f-${r.verdict}`, text: LABEL[r.verdict] })),
+        el("dl", {},
+          el("dt", { text: "Down" }), el("dd", { text: r.m.down }),
+          el("dt", { text: "Credit" }), el("dd", { text: r.m.credit ? `About ${r.m.credit}+` : "Lender sets it" }),
+          el("dt", { text: "Insurance" }), el("dd", { text: r.m.mi }),
+          el("dt", { text: "For" }), el("dd", { text: r.m.who })),
+        el("p", { class: "pc" }, el("b", { text: "Good: " }), r.m.pros),
+        el("p", { class: "pc" }, el("b", { text: "Watch: " }), r.m.cons),
+        r.m.pairs.length ? el("p", { class: "note" }, "Pairs with: ", r.m.pairs.join(", ")) : null,
+        el("ul", { class: "reasons" }, r.reasons.map((x) => el("li", { class: x.ok === true ? "met" : x.ok === false ? "miss" : "ask", text: x.text }))),
+        el("p", { class: "note" }, el("span", { class: `tag t-${r.m.certainty === "verified" ? "verified" : "partly"}`, text: r.m.certainty === "verified" ? "Verified 7 Nov 2026" : "General guidance" }), " ", r.m.url ? el("a", { href: r.m.url, target: "_blank", rel: "noopener noreferrer", text: "Source" }) : null)))))));
+  });
+  return section("atlas", "1. Ready: mortgage atlas", "Every main loan type, and which fit this family", "Uses the credit score, residency and income above. Orange County 2026 loan limit: $1,249,125; above $832,750 is high-balance.",
+    el("div", { class: "grid" },
+      el("div", {}, numberField("Down payment you can make", () => A.downPct, (v) => { A.downPct = v; }, { min: 0, max: 50, step: 0.5, suffix: "%" })),
+      el("div", {}, toggle("veteran", "A buyer is a veteran or service member"), toggle("selfEmployed", "A buyer is self-employed"))),
+    count, grid);
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -476,7 +517,7 @@ function intro() {
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
-  panel("ready", learnSection(), readySection(), borrowerSection()),
+  panel("ready", learnSection(), readySection(), borrowerSection(), atlasSection()),
   panel("together", hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", giveSection(), pillarsSection()),
   sourcesSection());
