@@ -417,3 +417,15 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .story-count { font-size: 14px; font-weight: 700; color: var(--muted); }
 .story-play { margin-left: auto; min-height: 40px; }
 @media (prefers-reduced-motion: reduce) { .story-dots button { transition: none; } }
+
+/* Donate a car */
+.car { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(260px, 1fr); gap: 24px; margin-top: 16px; }
+.car-steps { margin: 0; padding-left: 0; list-style: none; counter-reset: car; display: grid; gap: 12px; }
+.car-steps li { counter-increment: car; position: relative; padding-left: 44px; font-size: 16px; }
+.car-steps li::before { content: counter(car); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--orange); color: #1a1a1a; font-weight: 800; }
+.car-cta { margin: 20px 0 8px; }
+.car-cta .chip { display: inline-flex; align-items: center; min-height: 48px; padding: 10px 20px; background: var(--orange); border-color: var(--orange); color: #1a1a1a; font-weight: 800; text-decoration: none; }
+.car-side { padding: 20px; border-radius: 12px; background: #1a1a1a; color: #fff; }
+.car-side h3 { margin: 0 0 8px; color: #fff; }
+.car-side p { color: #e6e6e6; }
+@media (max-width: 860px) { .car { grid-template-columns: 1fr; } }
