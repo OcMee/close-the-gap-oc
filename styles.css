@@ -4,7 +4,7 @@
 @font-face { font-family: Montserrat; src: url(fonts/m700.woff) format("woff"); font-weight: 600 700; font-display: swap; }
 @font-face { font-family: Montserrat; src: url(fonts/m800.woff) format("woff"); font-weight: 800; font-display: swap; }
 :root {
-  --orange: #ff8710; --orangeText: #c45a00; --amber: #9a5400; --amberFill: #fbad23;
+  --orange: #ff8710; --orangeText: #1a1a1a; --amber: #1a1a1a; --amberFill: #fbad23;
   --bg: #f2f2f0; --deep: #ffffff; --card: #ffffff; --raise: #f7f7f5;
   --hair: #e0e0dc; --line: #a3a3a3; --text: #1a1a1a; --muted: #3f3f3f; --soft: #5f5f5f; --good: #1f7a4d; --bad: #b3261e;
   --r: 14px; --ease: cubic-bezier(.2,.7,.2,1);
@@ -157,3 +157,17 @@ li.ask::before { content: "?"; color: var(--amber); }
 }
 @media (max-width: 480px) { .stats4 { grid-template-columns: 1fr; } .logo { width: 110px; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .seg { transition: none; } }
+
+/* Brand orange, exactly as the logo: #FF8710 on large display text and as fills with near-black on top. */
+.intro h1 em, .hero .h1 em { color: var(--orange); }
+.eyebrow, .kicker { color: #1a1a1a; display: flex; align-items: center; gap: 10px; }
+.eyebrow::before, .kicker::before { content: ""; width: 12px; height: 12px; background: var(--orange); border-radius: 3px; flex: none; }
+.motto em, .byline em { color: #1a1a1a; text-decoration: underline 4px var(--orange); text-underline-offset: 6px; }
+.letters .l { display: inline-flex; align-items: center; justify-content: center; min-width: 64px; height: 64px; padding: 0 12px; background: var(--orange); color: #1a1a1a; border-radius: 10px; font-size: 40px; }
+.letters li:first-child .l { min-width: 128px; height: 112px; font-size: 64px; }
+.big { color: #1a1a1a; }
+.field output { color: #1a1a1a; background: #fff1e3; padding: 0 8px; border-radius: 6px; }
+a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickness: 2px; }
+.more summary { color: #1a1a1a; }
+.chart .curve { stroke: var(--orange); }
+@media (max-width: 860px) { .letters li:first-child .l { min-width: 96px; height: 88px; font-size: 48px; } }
