@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import * as g from "../src/gap.js";
 import { ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, INCOME } from "../src/data.js";
+import * as data from "../src/data.js";
 
 const near = (a, b, tol = 1) => assert.ok(Math.abs(a - b) <= tol, `${a} not within ${tol} of ${b}`);
 const by = (k) => BUYER_AID.find((p) => p.key === k);
@@ -162,4 +163,27 @@ test("pledge view", () => {
   assert.equal(p.buildDays, 12);
   near(p.shareOfGap, 25000 / 83615, 0.0001);
   assert.equal(g.pledgeView({ hours: 0, money: 10, gap: 0 }).shareOfGap, 1);
+});
+
+test("mortgage atlas fit rules", () => {
+  const { MORTGAGES } = data;
+  const m = (id) => MORTGAGES.find((x) => x.id === id);
+  const fam = { credit: 690, residency: "citizen", downPct: 3.5, loan: 450000, veteran: false, selfEmployed: false, firstTime: true, income: 118000 };
+  assert.equal(g.mortgageFit(m("conv"), fam).verdict, "fit");
+  assert.equal(g.mortgageFit(m("fha"), fam).verdict, "fit");
+  assert.equal(g.mortgageFit(m("fha"), { ...fam, residency: "other" }).verdict, "no");
+  assert.equal(g.mortgageFit(m("fha"), { ...fam, downPct: 3 }).verdict, "no");
+  assert.equal(g.mortgageFit(m("conv"), { ...fam, residency: "other" }).verdict, "fit");
+  assert.equal(g.mortgageFit(m("calhfa"), fam).verdict, "fit");
+  assert.equal(g.mortgageFit(m("calhfa"), { ...fam, credit: 670 }).verdict, "no");
+  assert.equal(g.mortgageFit(m("homeready"), fam).verdict, "no");
+  assert.equal(g.mortgageFit(m("homeready"), { ...fam, income: 100000 }).verdict, "fit");
+  assert.equal(g.mortgageFit(m("hb"), fam).verdict, "no");
+  assert.equal(g.mortgageFit(m("hb"), { ...fam, loan: 900000, downPct: 5 }).verdict, "fit");
+  assert.equal(g.mortgageFit(m("jumbo"), { ...fam, loan: 1300000, downPct: 20, credit: 760 }).verdict, "check");
+  assert.equal(g.mortgageFit(m("va"), fam).verdict, "no");
+  assert.equal(g.mortgageFit(m("va"), { ...fam, veteran: true }).verdict, "check");
+  assert.equal(g.mortgageFit(m("nonqm"), { ...fam, selfEmployed: true, downPct: 10 }).verdict, "check");
+  assert.equal(g.mortgageFit(m("gsfa"), { ...fam, loan: 900000 }).verdict, "no");
+  for (const x of MORTGAGES) assert.ok(["fit", "check", "no"].includes(g.mortgageFit(x, { ...fam, credit: NaN, loan: undefined }).verdict));
 });
