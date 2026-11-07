@@ -451,3 +451,11 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .vol-actions .chip { background: var(--orange); border-color: var(--orange); color: #1a1a1a; font-weight: 800; }
 .vol-link { display: inline-flex; align-items: center; text-decoration: none; }
 @media (max-width: 860px) { .vol { grid-template-columns: 1fr; } .vol-side { position: static; } }
+
+/* Help lift: bigger and louder */
+.lift-big { display: block; margin: 0 0 10px; font-size: clamp(40px, 5vw, 56px); font-weight: 800; color: var(--orange); letter-spacing: -.01em; }
+.lift { height: 64px; border-radius: 12px; box-shadow: 0 0 0 3px var(--orange); }
+.lift-base b { font-size: 17px; }
+.lift-key { font-size: 15px; font-weight: 600; }
+.lift-say { font-size: 17px; }
+.lift-big { font-variant-numeric: tabular-nums; }
