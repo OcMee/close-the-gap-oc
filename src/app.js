@@ -207,6 +207,9 @@ function readySection() {
   const alone = big("Price you could pay on income");
   const helped = big("With help that may fit");
   const list = el("div", { class: "aid" });
+  const lift = el("div", { class: "lift", role: "img" });
+  const liftKey = el("ul", { class: "lift-key" });
+  const liftSay = el("p", { class: "lift-say" });
   const habitat = el("ul", { class: "checks" });
   const next = el("ol", { class: "plain" });
   const cityId = "ready-city";
@@ -224,6 +227,22 @@ function readySection() {
     alone.v.textContent = money(r.alone);
     alone.n.textContent = `${money(r.monthly)} a month, 30% of gross income (ASSUMPTION), at ${S.rate.toFixed(2)}%`;
     helped.v.textContent = money(r.helped.price);
+    // The orange part: how much more home the help buys, split by program in proportion to each award.
+    const up = Math.max(0, r.helped.price - r.alone);
+    const total = Math.max(1, r.helped.price);
+    const parts = r.helped.lines.filter((l) => l.amount > 0);
+    const sum = parts.reduce((s, l) => s + l.amount, 0) || 1;
+    lift.replaceChildren(
+      el("span", { class: "lift-base", title: `On income: ${money(r.alone)}` }, el("b", { text: money(r.alone) })),
+      ...parts.map((l, k) => el("span", { class: `lift-help h${k % 3}`, title: `${l.program.name}: +${money((up * l.amount) / sum)}` })));
+    lift.firstChild.style.width = `${(r.alone / total) * 100}%`;
+    parts.forEach((l, k) => { lift.children[k + 1].style.width = `${((up * l.amount) / sum / total) * 100}%`; });
+    lift.setAttribute("aria-label", `On income ${money(r.alone)}, plus ${money(up)} from help, total ${money(r.helped.price)}`);
+    liftKey.replaceChildren(
+      el("li", {}, el("span", { class: "sw base" }), `On income ${money(r.alone)}`),
+      ...parts.map((l, k) => el("li", {}, el("span", { class: `sw h${k % 3}` }), `+${money((up * l.amount) / sum)} ${l.program.name}`)));
+    liftSay.replaceChildren(up > 0 ? el("b", { text: `Help adds ${money(up)} to the home they can buy (+${Math.round((up / Math.max(1, r.alone)) * 100)}%).` }) : el("b", { text: "No help fits these answers yet." }),
+      up > 0 ? " The lift is not dollar for dollar: help also changes the loan size and mortgage insurance." : " Try another city or check the first-time box.");
     helped.n.textContent = r.helped.aid > 0 ? `${money(r.helped.aid)} of deferred help: ${r.helped.lines.map((l) => l.program.name).join(" + ")}. Whether they combine is not confirmed.` : "No deferred help fits these answers";
     list.replaceChildren(...r.programs.map((p) => el("article", { class: `aidcard v-${p.verdict}` },
       el("div", { class: "row" }, el("b", { text: p.program.name })),
@@ -257,7 +276,7 @@ function readySection() {
         el("div", { class: "field" }, el("label", { for: cityId }, "City where they want to buy"), city),
         el("div", { class: "field" }, el("label", { for: "ready-res" }, "Residency"), res),
         first),
-      el("div", {}, group.node, alone.node, helped.node)),
+      el("div", {}, group.node, alone.node, helped.node, el("div", { class: "lift-box" }, el("span", { class: "lab", text: "What the help adds" }), lift, liftKey, liftSay))),
     programAtlas(),
     el("h3", { text: "Programs" }), list,
     el("h3", { text: "Habitat for Humanity of Orange County" }), habitat, el("p", { class: "note" }, "Three criteria from Habitat: need for improved housing, a steady source of income, and willingness to partner (sweat equity). Questions: Habitat OC Home Ownership, (714) 434-6200 ext. 227. ", src("habitat")),
