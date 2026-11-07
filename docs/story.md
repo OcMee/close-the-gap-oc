@@ -1,4 +1,4 @@
-# Ready, Together, Give
+# The Affordable Home OCMEE: Ready, Together, Give
 
 Three one-pagers that tell one story. The Ramos family, Frank and Bright Supply Co. are **made up for this demo**. Every number has a source or is labelled ASSUMPTION. Checked 7 November 2026.
 
