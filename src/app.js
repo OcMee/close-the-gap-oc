@@ -817,13 +817,13 @@ function aduSection() {
 
 
 // The chapter banner: makes the move between Ready, Together and Give visible.
-// Read the three as one sentence: Get ready. Get together. Give back. I, we, you.
+// The three parts spell GOD: Get ready. Organize together. Donate.
 const CHAPTERS = [
-  { id: "ready", n: 1, verb: "Get", word: "ready.", who: "I", whoLong: "For the family", img: "img/saving.jpg", alt: "A family counting savings at the kitchen table",
+  { id: "ready", n: 1, letter: "G", verb: "Get", word: "ready.", who: "I", whoLong: "For the family", img: "img/saving.jpg", alt: "A family counting savings at the kitchen table",
     line: "Learn the path, check which programs fit, read your own documents and look stronger to a lender." },
-  { id: "together", n: 2, verb: "Get", word: "together.", who: "We", whoLong: "For the city and the nonprofit", img: "img/framing.jpg", alt: "Volunteers raising a wall frame on a build site",
+  { id: "together", n: 2, letter: "O", verb: "Organize", word: "together.", who: "We", whoLong: "For the city and the nonprofit", img: "img/framing.jpg", alt: "Volunteers raising a wall frame on a build site",
     line: "Price one home, see who closes the gap, and take ready-made programs to council." },
-  { id: "give", n: 3, verb: "Give", word: "back.", who: "You", whoLong: "For the neighbor and the business", img: "img/gala.jpg", alt: "Guests at a community gala",
+  { id: "give", n: 3, letter: "D", verb: "", word: "Donate.", who: "You", whoLong: "For the neighbor and the business", img: "img/gala.jpg", alt: "Guests at a community gala",
     line: "Time, skills, goods and money, each one tied to a real gap. Demo only: nothing is charged." },
 ];
 function intro() {
@@ -841,7 +841,7 @@ function intro() {
         const on = document.getElementById(`tab-${c.id}`)?.getAttribute("aria-selected") === "true" || (!document.getElementById(`tab-${c.id}`) && i === 0);
         return el("button", { type: "button", class: "slip", "data-id": c.id, "aria-current": on ? "step" : "false", onclick: () => showTab(c.id) },
           el("img", { src: c.img, alt: "", width: "1200", height: "800" }),
-          el("span", { class: "slip-n", text: String(c.n) }),
+          el("span", { class: "slip-n", text: c.letter }),
           el("span", { class: "slip-w" }, T.steps[i][0], el("em", { text: T.steps[i][1] })));
       }))),
     el("div", { class: "acronym" },

@@ -1,4 +1,5 @@
 // Language flips for the page shell: notice, title block, OCMEED letters and the three chapters.
+// The slip letters G, O, D stay English in every language, like OCMEED.
 // Calculators, programs and sources stay in English for now. Translations are AI drafts: native speakers must review.
 export const LANGS = [
   ["en", "EN", "English"],
@@ -26,7 +27,7 @@ export const I18N = {
     ],
     byline: ["Orange County Mortgage, Education and Equity, ", "by Design.", " Affordable homes do not happen by accident."],
     who: ["For the family", "For the city and the nonprofit", "For the neighbor and the business"],
-    steps: [["Get ", "ready."], ["Get ", "together."], ["Give ", "back."]],
+    steps: [["Get ", "ready."], ["Organize ", "together."], ["", "Donate."]],
     note: "",
   },
   es: {
@@ -47,7 +48,7 @@ export const I18N = {
     ],
     byline: ["Hipoteca, Educación y Patrimonio en el Condado de Orange, ", "por Diseño.", " Las viviendas asequibles no ocurren por casualidad."],
     who: ["Para la familia", "Para la ciudad y las organizaciones", "Para el vecino y el negocio"],
-    steps: [["", "Prepárate."], ["", "Unámonos."], ["", "Retribuye."]],
+    steps: [["", "Prepárate."], ["Organicémonos ", "juntos."], ["", "Dona."]],
     note: "Por ahora, las calculadoras y las fuentes están en inglés. Traducción hecha con IA, pendiente de revisión por hablantes nativos.",
   },
   vi: {
@@ -68,7 +69,7 @@ export const I18N = {
     ],
     byline: ["Thế chấp, Giáo dục và Tài sản tại Quận Cam, ", "bằng Thiết kế.", " Nhà ở vừa túi tiền không tự nhiên mà có."],
     who: ["Cho gia đình", "Cho thành phố và tổ chức phi lợi nhuận", "Cho hàng xóm và doanh nghiệp"],
-    steps: [["Hãy ", "sẵn sàng."], ["Cùng ", "chung tay."], ["Hãy ", "cho đi."]],
+    steps: [["Hãy ", "sẵn sàng."], ["Cùng ", "tổ chức."], ["Hãy ", "quyên góp."]],
     note: "Hiện tại, các công cụ tính toán và nguồn tài liệu vẫn bằng tiếng Anh. Bản dịch bằng AI, cần người bản ngữ kiểm tra lại.",
   },
   zh: {
@@ -89,7 +90,7 @@ export const I18N = {
     ],
     byline: ["橙县的按揭、教育与房屋净值，", "源于设计。", "可负担住房不会凭空出现。"],
     who: ["为家庭", "为城市和非营利组织", "为邻居和企业"],
-    steps: [["", "做好准备"], ["", "携手同行"], ["", "回馈社区"]],
+    steps: [["", "做好准备"], ["", "共同组织"], ["", "慷慨捐赠"]],
     note: "目前计算工具和资料来源仍为英文。本页为 AI 翻译，有待母语人士审校。",
   },
 };
