@@ -38,6 +38,7 @@ const S = {
   ready: { size: 4, income: 118000, debts: 500, rent: 2700, city: "Santa Ana", residency: "citizen", firstTime: true, credit: 690, savings: 15000, jobYears: 3 },
   pledge: { hours: 40, skill: "none", materials: 0, money: 25000 },
   atlas: { downPct: 3.5, veteran: false, selfEmployed: false },
+  donate: { cause: "home", amount: 250, custom: "", freq: "monthly", match: false },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -605,6 +606,66 @@ function eventsSection() {
     el("p", { class: "note", text: "Illustrations, not real events. Dates, venues and partners are for each city and nonprofit to set." }));
 }
 
+
+// GIVE: a donation flow that works up to the payment step, then says plainly it is a demo.
+// It never asks for a name, email or card, so nothing personal or financial is collected.
+const CAUSES = [
+  ["home", "Close one home’s gap", "Goes to the gap on one affordable home in the Together tab."],
+  ["pool", "Down payment loan pool", "Deferred loans that families repay when they sell, so the money helps again."],
+  ["build", "Build Day materials", "Lumber, paint and tools for a community Build Day."],
+  ["classes", "Homebuyer classes", "Free classes in English, Spanish and Vietnamese."],
+];
+function donateSection() {
+  const D = S.donate;
+  const preview = el("div", { class: "impact" });
+  const summary = el("p", { class: "answer small", role: "status" });
+  const dlg = el("dialog", { class: "demo-dialog", "aria-labelledby": "demo-title" },
+    el("p", { class: "eyebrow", text: "Demo" }),
+    el("h2", { id: "demo-title", text: "Giving is in the works" }),
+    el("p", { text: "This is a demo of how giving will work. No payment is taken, and no card or personal details are asked for or stored." }),
+    el("p", { id: "demo-summary" }),
+    el("p", { text: "To give today, give directly to a nonprofit you trust, such as Habitat for Humanity of Orange County." }),
+    el("div", { class: "dlg-actions" },
+      el("a", { class: "chip", href: "https://habitatoc.org/", target: "_blank", rel: "noopener noreferrer" }, "Visit Habitat OC"),
+      el("button", { type: "button", class: "ghost", onclick: () => dlg.close() }, "Back to the demo")));
+  const amountBtns = [50, 250, 1000, 5000, 25000].map((v) => el("button", { type: "button", class: "amt", "data-v": v, onclick: () => set(() => { D.amount = v; D.custom = ""; }) }, money(v)));
+  const customId = "donate-custom";
+  const custom = el("input", { id: customId, type: "number", min: 1, max: 10000000, step: 1, inputmode: "numeric", placeholder: "Other", value: D.custom,
+    onchange: (e) => set(() => { const v = clampNum(e.target.value, 1, 10000000, 0); D.custom = v ? String(v) : ""; if (v) D.amount = v; e.target.value = D.custom; }) });
+  const freq = el("div", { class: "seg2", role: "group", "aria-label": "How often" },
+    ...[["once", "One time"], ["monthly", "Monthly"]].map(([k, l]) => el("button", { type: "button", "data-k": k, onclick: () => set(() => { D.freq = k; }) }, l)));
+  const causeList = el("div", { class: "causes", role: "radiogroup", "aria-label": "Where it goes" },
+    ...CAUSES.map(([k, title, text]) => el("label", { class: "cause" }, el("input", { type: "radio", name: "cause", value: k, checked: D.cause === k, onchange: () => set(() => { D.cause = k; }) }), el("span", {}, el("b", { text: title }), el("small", { text })))));
+  const match = el("label", { class: "tick" }, el("input", { type: "checkbox", checked: D.match, onchange: (e) => set(() => { D.match = e.target.checked; }) }), "My employer matches gifts (doubles it, if they do)");
+  subs.push((r) => {
+    amountBtns.forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.v) === D.amount && !D.custom)));
+    [...freq.children].forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === D.freq)));
+    const yearly = D.amount * (D.freq === "monthly" ? 12 : 1) * (D.match ? 2 : 1);
+    const gap = Math.max(0, r.gapIfAll);
+    const cause = CAUSES.find(([k]) => k === D.cause);
+    const lines = [];
+    if (D.cause === "home") lines.push(gap > 0 ? `${pct(Math.min(1, yearly / gap))} of one home’s ${money(gap)} gap` : "The example home's gap is already closed; it would go to the next home");
+    if (D.cause === "pool") lines.push(`${Math.floor(yearly / 50000)} family loan${Math.floor(yearly / 50000) === 1 ? "" : "s"} of $50,000, like My Anaheim Home (repaid and lent again)`);
+    if (D.cause === "build") lines.push(`Materials for about ${Math.max(0, Math.floor(yearly / 2500))} Build Day${Math.floor(yearly / 2500) === 1 ? "" : "s"} at $2,500 each (ASSUMPTION)`);
+    if (D.cause === "classes") lines.push(`About ${Math.max(0, Math.floor(yearly / 1500))} class${Math.floor(yearly / 1500) === 1 ? "" : "es"} for 20 families at $1,500 each (ASSUMPTION)`);
+    preview.replaceChildren(el("p", { class: "lab", text: "Your gift in a year" }), el("strong", { class: "big", text: money(yearly) }),
+      el("p", { class: "sub", text: `${money(D.amount)} ${D.freq === "monthly" ? "a month" : "once"}${D.match ? ", doubled by an employer match" : ""}` }),
+      el("ul", { class: "plain" }, lines.map((t) => el("li", { text: t }))));
+    summary.textContent = `${money(D.amount)} ${D.freq === "monthly" ? "a month" : "one time"} to ${cause[1].toLowerCase()}.`;
+    document.getElementById("demo-summary") && (document.getElementById("demo-summary").textContent = `You chose ${summary.textContent}`);
+  });
+  return section("donate", "3. Give: donate", "Give in under a minute", "Choose where it goes and how much. You see what it does before you give.",
+    el("div", { class: "grid" },
+      el("div", {},
+        el("h3", { text: "Where it goes" }), causeList,
+        el("h3", { text: "Amount" }), el("div", { class: "amounts" }, amountBtns, el("label", { class: "sr", for: customId, text: "Other amount" }), el("span", { class: "num solo" }, el("span", { text: "$" }), custom)),
+        el("h3", { text: "How often" }), freq, match),
+      el("div", { class: "donate-side" }, preview, summary,
+        el("button", { type: "button", class: "cta", onclick: () => { document.getElementById("demo-summary").textContent = `You chose ${summary.textContent}`; dlg.showModal(); } }, "Continue to secure payment"),
+        el("p", { class: "note", text: "Demo: no payment is taken. Gifts to a 501(c)(3) are generally deductible for donors who itemize; ask a tax advisor." }))),
+    dlg);
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -627,7 +688,7 @@ const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", 
 document.getElementById("main").append(intro(),
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
-  panel("give", eventsSection(), giveSection(), pillarsSection()),
+  panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
 paint();
