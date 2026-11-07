@@ -246,3 +246,26 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .event dd { margin: 0; }
 .event .first { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--hair); font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .story { scroll-snap-type: none; } }
+
+/* Demo donation flow */
+.causes { display: grid; gap: 8px; }
+.cause { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--hair); border-radius: 10px; background: #fff; cursor: pointer; }
+.cause:has(input:checked) { border-color: var(--orange); box-shadow: 0 0 0 1px var(--orange); }
+.cause input { margin-top: 4px; accent-color: var(--orange); width: 18px; height: 18px; flex: none; }
+.cause small { display: block; color: var(--muted); font-size: 13px; }
+.amounts { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.amt, .seg2 button { min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 10px; background: #fff; color: #1a1a1a; font: inherit; font-weight: 700; cursor: pointer; }
+.amt[aria-pressed="true"], .seg2 button[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); }
+.seg2 { display: inline-flex; gap: 8px; margin-bottom: 8px; }
+.amounts .num { max-width: 160px; }
+.donate-side { position: sticky; top: 96px; padding: 24px; border-radius: var(--r); background: #fff; border: 2px solid var(--orange); }
+.impact .lab { margin: 0; color: var(--muted); font-size: 14px; }
+.impact .plain { margin-top: 8px; }
+.cta { width: 100%; min-height: 52px; margin-top: 16px; border: 0; border-radius: 10px; background: var(--orange); color: #1a1a1a; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
+.cta:hover { filter: brightness(.95); }
+.demo-dialog { max-width: 520px; width: calc(100% - 32px); border: 0; border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+.demo-dialog::backdrop { background: rgba(26,26,26,.55); }
+.demo-dialog h2 { font-size: 28px; margin-bottom: 8px; }
+.dlg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.dlg-actions .chip { display: inline-flex; align-items: center; text-decoration: none; background: var(--orange); border-color: var(--orange); color: #1a1a1a; }
+@media (max-width: 860px) { .donate-side { position: static; } }
