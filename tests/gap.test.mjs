@@ -187,3 +187,23 @@ test("mortgage atlas fit rules", () => {
   assert.equal(g.mortgageFit(m("gsfa"), { ...fam, loan: 900000 }).verdict, "no");
   for (const x of MORTGAGES) assert.ok(["fit", "check", "no"].includes(g.mortgageFit(x, { ...fam, credit: NaN, loan: undefined }).verdict));
 });
+
+test("shared equity: smaller loan, no mortgage insurance, fund gets its share back", () => {
+  const r = g.sharedEquity({ price: 700000, downPct: 5, equityPct: 20, ratePct: 7, years: 10, growthPct: 3 });
+  near(r.fundIn, 140000);
+  assert.ok(r.saving > 1000, String(r.saving));
+  near(r.futureValue, 700000 * 1.03 ** 10, 1);
+  near(r.ukReturn, r.futureValue * 0.2, 1);
+  near(r.sfReturn, 140000 + 0.2 * (r.futureValue - 700000), 1);
+  near(r.ukReturn, r.sfReturn, 1);
+  assert.equal(r.homesPerTenMillion, 71);
+  assert.ok(Number.isFinite(g.sharedEquity({ price: NaN, ratePct: NaN }).saving));
+});
+test("set-aside: count, discount, resale rule", () => {
+  const r = g.setAside({ homes: 200, setAsidePct: 10, discountPct: 30, marketPrice: 1000000, ratePct: 7 });
+  assert.equal(r.count, 20);
+  near(r.price, 700000);
+  near(r.valueToFamilies, 6000000);
+  assert.ok(r.monthlyDiscounted < r.monthlyMarket);
+  assert.ok(r.resaleRule.startsWith("30%"));
+});
