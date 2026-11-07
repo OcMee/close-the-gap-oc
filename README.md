@@ -1,6 +1,6 @@
 # The Affordable Home Initiative, by OCMEE Design
 
-**OCMEED:** Orange County Mortgage, Equity and Education, by Design.
+**OCMEED:** Orange County Mortgage, Education and Equity, by Design.
 
 > For a nonprofit finance lead, city housing analyst or donor: shows whether one affordable Orange County home pencils, which help stacks, and what is still missing, with every number sourced or labelled ASSUMPTION.
 
