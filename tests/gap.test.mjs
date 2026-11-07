@@ -135,3 +135,31 @@ test("build day planner", () => {
   assert.equal(b.total, 3000);
   assert.equal(b.perAdult, 32);
 });
+
+test("lender readiness: debt-to-income, credit tiers, cash, job", () => {
+  const base3 = { income: 120000, debts: 1000, credit: 690, savings: 20000, jobYears: 3, price: 400000, ratePct: 7.18, assume: ASSUME };
+  const r = g.lenderReady(base3);
+  near(r.dti, 30 + 10, 0.01);
+  assert.equal(r.tips.find((t) => t.title === "Debt-to-income").status, "good");
+  const credit = r.tips.find((t) => t.title === "Credit score");
+  assert.equal(credit.status, "work");
+  assert.ok(credit.text.includes("740"));
+  near(r.cashNeeded, 400000 * 0.06 + 3000 * 2, 0.5);
+  assert.equal(r.tips.find((t) => t.title === "Cash").status, "work");
+  assert.equal(r.tips.find((t) => t.title === "Steady income").status, "good");
+  const high = g.lenderReady({ ...base3, debts: 1800 });
+  assert.equal(high.tips.find((t) => t.title === "Debt-to-income").status, "work");
+  assert.ok(high.tips.find((t) => t.title === "Debt-to-income").text.includes("$500"));
+  assert.equal(g.lenderReady({ ...base3, debts: 2500 }).tips.find((t) => t.title === "Debt-to-income").status, "bad");
+  assert.equal(g.lenderReady({ ...base3, credit: 600 }).tips.find((t) => t.title === "Credit score").status, "bad");
+  assert.equal(g.lenderReady({ ...base3, credit: 800 }).tips.find((t) => t.title === "Credit score").status, "good");
+  assert.equal(g.lenderReady({ ...base3, savings: 100000 }).tips.find((t) => t.title === "Cash").status, "good");
+  assert.equal(g.lenderReady({ ...base3, jobYears: 1 }).tips.find((t) => t.title === "Steady income").status, "work");
+});
+
+test("pledge view", () => {
+  const p = g.pledgeView({ hours: 100, money: 25000, gap: 83615 });
+  assert.equal(p.buildDays, 12);
+  near(p.shareOfGap, 25000 / 83615, 0.0001);
+  assert.equal(g.pledgeView({ hours: 0, money: 10, gap: 0 }).shareOfGap, 1);
+});
