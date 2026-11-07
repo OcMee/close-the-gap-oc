@@ -1,4 +1,6 @@
-# The Affordable Home OCMEE: Ready, Together, Give
+# The Affordable Home Initiative, by OCMEE Design: Ready, Together, Give
+
+**OCMEED:** Orange County Mortgage, Equity and Education, by Design.
 
 Three one-pagers that tell one story. The Ramos family, Frank and Bright Supply Co. are **made up for this demo**. Every number has a source or is labelled ASSUMPTION. Checked 7 November 2026.
 
