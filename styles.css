@@ -378,3 +378,7 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .pa-in.small { font-size: 17px; }
 .pa-head .lab { font-size: 18px; }
 .pa-legend .dot { flex: none; }
+
+/* Dials under number boxes */
+.field .dial { display: block; width: 100%; max-width: 300px; height: 28px; margin: 6px 0 0; accent-color: var(--orange); cursor: pointer; }
+.field .dial:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 4px; }
