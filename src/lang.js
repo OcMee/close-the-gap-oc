@@ -9,7 +9,7 @@ export const LANGS = [
 
 export const I18N = {
   en: {
-    notice: "Made-up demo families. Not legal, financial or lending advice. Early check only. Program staff make every final decision. This tool never submits or sends anything.",
+    notice: "Demo with made-up families. No legal, financial or lending advice given. Program staff make every decision. Nothing you enter is sent anywhere.",
     brand: "The Affordable Home Initiative",
     eyebrow: "OCMEE Design presents",
     h1: ["The Affordable Home ", "Initiative"],
@@ -30,7 +30,7 @@ export const I18N = {
     note: "",
   },
   es: {
-    notice: "Familias de ejemplo inventadas. No es asesoría legal, financiera ni de préstamos. Solo una revisión inicial. El personal del programa toma cada decisión final. Esta herramienta nunca presenta ni envía nada.",
+    notice: "Demostración con familias ficticias. No se ofrece asesoría legal, financiera ni de préstamos. El personal del programa toma cada decisión. Nada de lo que escribe se envía a ningún lugar.",
     brand: "Iniciativa Hogar Asequible",
     eyebrow: "OCMEE Design presenta",
     h1: ["La Iniciativa ", "Hogar Asequible"],
@@ -51,7 +51,7 @@ export const I18N = {
     note: "Por ahora, las calculadoras y las fuentes están en inglés. Traducción hecha con IA, pendiente de revisión por hablantes nativos.",
   },
   vi: {
-    notice: "Các gia đình mẫu là hư cấu. Không phải tư vấn pháp lý, tài chính hay cho vay. Chỉ là kiểm tra sơ bộ. Nhân viên chương trình đưa ra mọi quyết định cuối cùng. Công cụ này không bao giờ nộp hay gửi bất cứ thứ gì.",
+    notice: "Bản demo với các gia đình hư cấu. Không cung cấp tư vấn pháp lý, tài chính hay cho vay. Nhân viên chương trình đưa ra mọi quyết định. Thông tin bạn nhập không được gửi đi đâu cả.",
     brand: "Sáng kiến Nhà ở Vừa túi tiền",
     eyebrow: "OCMEE Design giới thiệu",
     h1: ["Sáng kiến ", "Nhà ở Vừa túi tiền"],
@@ -72,7 +72,7 @@ export const I18N = {
     note: "Hiện tại, các công cụ tính toán và nguồn tài liệu vẫn bằng tiếng Anh. Bản dịch bằng AI, cần người bản ngữ kiểm tra lại.",
   },
   zh: {
-    notice: "示例家庭均为虚构。不构成法律、财务或贷款建议。仅供初步检查。所有最终决定由项目工作人员作出。本工具从不提交或发送任何内容。",
+    notice: "演示使用虚构家庭。不提供法律、财务或贷款建议。所有决定由项目工作人员作出。您输入的任何内容都不会被发送。",
     brand: "可负担住房倡议",
     eyebrow: "OCMEE Design 呈现",
     h1: ["可负担住房", "倡议"],

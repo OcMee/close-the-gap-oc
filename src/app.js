@@ -880,6 +880,61 @@ function carSection() {
         el("p", {}, tag("assumption"), " Idea for a city or nonprofit: a small car-repair fund for families in the Ready program, so one repair bill does not undo two years of saving."))));
 }
 
+// GIVE: pick volunteer roles. Nothing is sent: the page builds a message the volunteer copies and sends themselves.
+const ROLES = [
+  ["build", "Build crew", "Half or full day", "Framing, roofing, drywall and siding beside a site lead. No experience needed; the crew lead shows you how."],
+  ["paint", "Paint and plant", "Half day", "Interior paint, fences and drought-tolerant yards. Good for families and teams; ask about age rules."],
+  ["events", "Event crew", "2 to 4 hours", "Check-in, water and lunch at Build Days, groundbreakings and home dedications."],
+  ["papers", "Paperwork and translation", "Flexible, can be remote", "Help families gather documents for the Ready check, or translate in Spanish, Vietnamese or Chinese. No legal advice."],
+  ["coach", "Ready coach", "2 hours a month", "Walk one family through Ready: programs, lender tips and the document check, month by month."],
+  ["trades", "Skilled trades", "By project", "Licensed electricians, plumbers, roofers and HVAC techs who can lead or inspect work."],
+  ["store", "Resale store", "Half day", "Sort, price and move donated furniture, appliances and building materials at a ReStore."],
+  ["pro", "Pro bono", "A few hours", "Attorneys, accountants, engineers and lenders: reviews and workshops families would otherwise pay for."],
+];
+function volunteerSection() {
+  const V = { roles: new Set(["build"]), when: "Weekends", langs: new Set(["English"]) };
+  const msg = el("textarea", { class: "vol-msg", rows: 7, readonly: true, "aria-label": "Your volunteer message" });
+  const count = el("p", { class: "answer small", role: "status" });
+  const copied = el("span", { class: "note", role: "status" });
+  const draw = () => {
+    const picked = ROLES.filter((r) => V.roles.has(r[0]));
+    count.textContent = picked.length ? `${picked.length} role${picked.length > 1 ? "s" : ""} picked. Your message is ready to copy.` : "Pick at least one role.";
+    msg.value = picked.length ? [
+      "Hello Habitat for Humanity of Orange County,",
+      "",
+      `I would like to volunteer. Roles I am interested in: ${picked.map((r) => r[1]).join(", ")}.`,
+      `I am usually free: ${V.when.toLowerCase()}.`,
+      `Languages I speak: ${[...V.langs].join(", ") || "English"}.`,
+      "",
+      "Please let me know the next steps.",
+      "[Your name and phone]",
+    ].join("\n") : "";
+  };
+  const role = ([key, name, time, text]) => el("label", { class: "vol-role" },
+    el("input", { type: "checkbox", checked: V.roles.has(key), onchange: (e) => { if (e.target.checked) V.roles.add(key); else V.roles.delete(key); draw(); } }),
+    el("span", {}, el("b", { text: name }), el("span", { class: "vol-time", text: ` \u00b7 ${time}` }), el("span", { class: "vol-text", text: text })));
+  const seg = el("div", { class: "seg2", role: "group", "aria-label": "When you are free" });
+  const paintSeg = () => seg.replaceChildren(...["Weekdays", "Weekends", "Evenings", "Any time"].map((w) => el("button", { type: "button", "aria-pressed": V.when === w ? "true" : "false", onclick: () => { V.when = w; paintSeg(); draw(); } }, w)));
+  paintSeg();
+  const langs = el("div", { class: "vol-langs" }, ["English", "Spanish", "Vietnamese", "Chinese", "Korean", "Tagalog"].map((l) => el("label", { class: "tick" },
+    el("input", { type: "checkbox", checked: V.langs.has(l), onchange: (e) => { if (e.target.checked) V.langs.add(l); else V.langs.delete(l); draw(); } }), l)));
+  const copy = el("button", { type: "button", class: "chip", onclick: async () => {
+    try { await navigator.clipboard.writeText(msg.value); copied.textContent = " Copied. Paste it into an email to Habitat OC."; } catch { msg.select(); copied.textContent = " Select the text and copy it."; }
+  } }, "Copy my message");
+  draw();
+  return section("volunteer", "3. Donate: your time", "Volunteer: pick what you would like to do", "Examples of roles. Build days and shifts are set by the nonprofit; this page only helps you say what you can offer.",
+    el("div", { class: "vol" },
+      el("div", { class: "vol-roles" }, ROLES.map(role)),
+      el("div", { class: "vol-side" },
+        el("p", { class: "lab", text: "When are you free?" }), seg,
+        el("p", { class: "lab", text: "Languages you speak" }), langs,
+        count, msg,
+        el("div", { class: "vol-actions" }, copy,
+          el("a", { class: "ghost vol-link", href: "https://habitatoc.org/get-involved/individual-volunteers/", target: "_blank", rel: "noopener noreferrer", text: "Register at Habitat OC \u2192" })),
+        copied,
+        el("p", { class: "note", text: "Nothing is sent or saved by this page. Companies: Habitat OC also runs corporate volunteer days. Source: habitatoc.org volunteer pages, checked 7 Nov 2026." }))));
+}
+
 function donateSection() {
   const D = S.donate;
   const preview = el("div", { class: "impact" });
@@ -1105,7 +1160,7 @@ introEl = intro();
 document.getElementById("main").append(introEl,
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
-  panel("give", donateSection(), carSection(), eventsSection(), giveSection(), pillarsSection()),
+  panel("give", donateSection(), carSection(), volunteerSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 document.getElementById("tabs").before(langSwitch());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
