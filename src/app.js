@@ -1,6 +1,6 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
-import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED } from "./data.js";
-import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays } from "./gap.js";
+import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS } from "./data.js";
+import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView } from "./gap.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 function el(tag, attrs = {}, ...kids) {
@@ -33,7 +33,8 @@ const S = {
   assume: { ...ASSUME }, deal: DEAL.map((l) => ({ ...l })),
   aid: Object.fromEntries(BUYER_AID.map((p) => [p.key, false])),
   funds: PROJECT_FUNDS.map((f) => ({ ...f, confirmed: false })),
-  ready: { size: 4, income: 118000, debts: 500, rent: 2700, city: "Santa Ana", residency: "citizen", firstTime: true },
+  ready: { size: 4, income: 118000, debts: 500, rent: 2700, city: "Santa Ana", residency: "citizen", firstTime: true, credit: 690, savings: 15000, jobYears: 3 },
+  pledge: { hours: 40, skill: "none", materials: 0, money: 25000 },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -375,6 +376,86 @@ function sourcesSection() {
       el("tbody", {}, rows.map(([label, status, url]) => el("tr", {}, el("td", { text: label }), el("td", {}, tag(status)), el("td", {}, url ? el("a", { href: url, target: "_blank", rel: "noopener noreferrer", text: "Open" }) : "None"))))));
 }
 
+
+// READY: learn the basics, then see how a lender would see you.
+function learnSection() {
+  return section("learn", "1. Ready: learn", "Learn the basics in five minutes", "Six short lessons. Each one is general guidance; your lender and program staff decide.",
+    el("div", { class: "lessons" }, LESSONS.map((l, i) => el("details", { class: "lesson", open: i === 0 }, el("summary", {}, el("span", { class: "n", text: String(i + 1) }), l.title), el("p", { text: l.body })))));
+}
+
+function borrowerSection() {
+  const R = S.ready;
+  const list = el("div", { class: "tips" });
+  const dti = big("Debt-to-income with the new payment");
+  const cash = big("Cash to have ready");
+  subs.push(() => {
+    const ready = readyCheck({ ...R, ratePct: S.rate, assume: S.assume });
+    const r = lenderReady({ ...R, price: ready.helped.price, ratePct: S.rate, assume: S.assume });
+    dti.v.textContent = `${r.dti.toFixed(0)}%`;
+    dti.v.dataset.bad = r.dti > LENDER.dtiTarget ? "1" : "0";
+    dti.n.textContent = `Target ${LENDER.dtiTarget}% or less. Most loans stop near ${LENDER.dtiMax}%.`;
+    cash.v.textContent = money(r.cashNeeded);
+    cash.n.textContent = `For a ${money(ready.helped.price)} home: ${S.assume.downPct}% down, about ${LENDER.closingPct}% closing costs, ${LENDER.months} months of payments`;
+    const label = { good: "Strong", work: "Work on this", bad: "Fix first", tip: "Tip" };
+    list.replaceChildren(...r.tips.map((t) => el("article", { class: `tip s-${t.status}` },
+      el("div", { class: "row" }, el("b", { text: t.title }), el("span", { class: "tag", text: label[t.status] })), el("p", { text: t.text }))));
+  });
+  return section("borrower", "1. Ready: get stronger", "How a lender sees this family", "Personal tips from the answers above, each with a number to aim for. General guidance, not lending advice.",
+    el("div", { class: "grid" },
+      el("div", {},
+        numberField("Lowest credit score of the buyers", () => R.credit, (v) => { R.credit = Math.round(v); }, { min: 300, max: 850, step: 5 }),
+        numberField("Savings today", () => R.savings, (v) => { R.savings = v; }, { min: 0, max: 2000000, step: 500, prefix: "$" }),
+        numberField("Years of steady income", () => R.jobYears, (v) => { R.jobYears = v; }, { min: 0, max: 40, step: 0.5 })),
+      el("div", {}, dti.node, cash.node)),
+    list);
+}
+
+// TOGETHER: ideas a city or nonprofit can start, each with a first step.
+function ideasSection() {
+  return section("ideas", "Together: program ideas", "Programs a city or nonprofit can start", "Each idea names the lever it pulls and a first step. Examples are only ones we checked; the rest say so.",
+    el("div", { class: "ideas" }, IDEAS.map((i) => el("article", { class: "idea" },
+      el("div", { class: "row" }, el("b", { text: i.title }), el("span", { class: "lever", text: i.lever })),
+      el("p", { text: i.what }),
+      el("p", { class: "note" }, "Example: ", i.example, " ", i.url ? el("a", { href: i.url, target: "_blank", rel: "noopener noreferrer", text: "Source" }) : null),
+      el("p", { class: "first" }, el("b", { text: "First step: " }), i.first)))));
+}
+
+// GIVE: pillars of the community, with time, skills, resources and money.
+function pillarsSection() {
+  const P2 = S.pledge;
+  const days = big("Build Days");
+  const share = big("Share of one home's gap");
+  const say = el("p", { class: "answer small", role: "status" });
+  subs.push((r) => {
+    const v = pledgeView({ hours: P2.hours, money: P2.money, gap: r.gapIfAll });
+    days.v.textContent = String(v.buildDays);
+    days.n.textContent = `${P2.hours} hours at 8 hours a day`;
+    share.v.textContent = r.gapIfAll > 0 ? pct(v.shareOfGap) : "Closed";
+    share.n.textContent = r.gapIfAll > 0 ? `${money(P2.money)} against a ${money(r.gapIfAll)} gap` : "No gap left in this scenario";
+    const parts = [];
+    if (P2.hours > 0) parts.push(`${P2.hours} hours: ${v.buildDays} Build Days beside families earning their sweat equity`);
+    if (P2.skill !== "none") parts.push(`pro bono ${P2.skill.toLowerCase()} help that families would otherwise pay for`);
+    if (P2.materials > 0) parts.push(`${money(P2.materials)} of materials through a Habitat ReStore`);
+    if (P2.money > 0) parts.push(`${money(P2.money)}, about ${pct(v.shareOfGap)} of one home's gap`);
+    say.textContent = parts.length ? `Your pledge: ${parts.join("; ")}.` : "Add time, skills, materials or money to see what your pledge does.";
+  });
+  const skillSel = el("select", { id: "pledge-skill", onchange: (e) => set(() => { P2.skill = e.target.value; }) },
+    ["none", "Legal", "Engineering and design", "Lending and real estate", "Accounting and tax"].map((s) => el("option", { value: s, text: s === "none" ? "None" : s })));
+  skillSel.value = P2.skill;
+  return section("pillars", "3. Give: pillars of the community", "Give time, skills, resources or money", "For people who have done well here and want their county to be better. Every kind of help counts, not only money.",
+    el("div", { class: "ways" }, GIVE_WAYS.map((w) => el("div", { class: "way" }, el("h3", { text: w.kind }), el("ul", { class: "plain" }, w.items.map((t) => el("li", { text: t })))))),
+    el("h3", { text: "Your pledge" }),
+    el("div", { class: "grid" },
+      el("div", {},
+        numberField("Volunteer hours this year", () => P2.hours, (v) => { P2.hours = Math.round(v); }, { min: 0, max: 5000, step: 8 }),
+        el("div", { class: "field" }, el("label", { for: "pledge-skill" }, "Professional skill to give"), skillSel),
+        numberField("Materials to donate, value", () => P2.materials, (v) => { P2.materials = v; }, { min: 0, max: 10000000, step: 500, prefix: "$" }),
+        numberField("Money", () => P2.money, (v) => { P2.money = v; }, { min: 0, max: 100000000, step: 1000, prefix: "$" })),
+      el("div", {}, days.node, share.node)),
+    say,
+    el("p", { class: "note", text: "Volunteer hours help build homes; families earn their own sweat equity. Ask Habitat OC or your chosen nonprofit how they count gifts of time and materials. Ask your tax advisor how a gift is deducted." }));
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -387,7 +468,7 @@ function intro() {
     el("p", { class: "eyebrow", text: "OCMEE Design presents" }),
     el("h1", {}, "The Affordable Home ", el("em", { text: "Initiative" })),
     el("p", { class: "motto" }, "Every working family a way in. ", el("em", { text: "Every neighbor a way to help." })),
-    el("p", { class: "lead", text: "Ready checks one family's path. Together shows a city or nonprofit what it costs to deliver an affordable home and who closes the gap. Give shows a donor or business exactly what their help does. Same sources, one story." }),
+    el("p", { class: "lead", text: "Ready teaches a family the path, checks which programs fit and shows how to look stronger to a lender. Together gives a city or nonprofit the cost of one home, who closes the gap and programs it can start. Give lets the pillars of the community help with time, skills, resources and money. Same sources, one story." }),
     el("div", { class: "acronym" },
       el("p", { class: "acronym-title" }, "What ", el("b", { text: "OCMEED" }), " stands for"),
       el("ol", { class: "letters" }, letters.map(([l, w, d]) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: w }), el("span", { class: "d", text: d })))),
@@ -395,9 +476,9 @@ function intro() {
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
-  panel("ready", readySection()),
-  panel("together", hero(), homeSection(), leversSection(), familySection(), stackSection(), rateSection()),
-  panel("give", giveSection()),
+  panel("ready", learnSection(), readySection(), borrowerSection()),
+  panel("together", hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
+  panel("give", giveSection(), pillarsSection()),
   sourcesSection());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
 paint();

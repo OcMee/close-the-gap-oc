@@ -102,3 +102,40 @@ export const HABITAT = {
 
 // Budget share used in the Ready check: 30% of gross income, the statute's share for lower-income buyers. ASSUMPTION for any one family.
 export const READY_SHARE = 0.30;
+
+// READY: short lessons. Plain facts; each says where it comes from or that it is general guidance.
+export const LESSONS = [
+  { title: "How buying works in California", body: "Get pre-approved, find a home, make an offer, open escrow, finish inspections and the appraisal, remove contingencies, sign and get the keys. On the standard California contract, inspection, appraisal and loan contingencies default to 17 days each. Escrow usually takes 30 to 45 days." },
+  { title: "What a lender looks at", body: "Four things: credit history and score, debt-to-income (all monthly debts plus the new housing payment, divided by gross monthly income), steady income (usually two years), and cash for the down payment, closing costs and reserves. Self-employed income is usually a two-year average after expenses." },
+  { title: "Most down payment help is a loan", body: "City and state help is usually a deferred loan: no monthly payment, repaid when you sell, refinance or pay off the first loan. Dream For All is repaid with a share of the home's gain. A grant you never repay is rare. Read how each one is repaid before you count on it." },
+  { title: "Below-market homes and their rules", body: "Habitat for Humanity, land trust and deed-restricted homes sell below market. In return the resale price is limited and equity is shared, so the home stays affordable for the next family. Ask for the restriction length and the resale formula in writing." },
+  { title: "What can break a deal", body: "A low appraisal, a rate jump before you lock, a new car loan or credit card, a job change, a large deposit you cannot explain, or insurance you cannot get. Lock your rate, change nothing in your finances during escrow, and get an insurance quote before you offer." },
+  { title: "Free help near you", body: "HUD-approved housing counselors teach the homebuyer class most programs require. Habitat OC runs free online orientations in English, Spanish and Vietnamese. For credit: SparkPoint OC (Orange County United Way), (714) 278-4679, and Operation HOPE, (657) 208-5873." },
+];
+
+// READY: lender targets used for tips. General guidance, labelled as such on screen.
+export const LENDER = {
+  dtiTarget: 43, dtiMax: 50, utilization: 30, months: 2, jobYears: 2,
+  credit: [[620, "Most conventional loans"], [640, "Santa Ana My First Home, GSFA"], [680, "CalHFA conventional loans"], [740, "Better pricing"], [780, "Best pricing tier"]],
+  closingPct: 3,
+};
+
+// TOGETHER: program ideas a city or nonprofit can start. Examples are only ones we checked.
+export const IDEAS = [
+  { title: "Community land trust homes", lever: "Land", what: "A trust keeps the land and sells the home, so the price drops by the land's share and stays low at resale.", example: "Irvine Community Land Trust, Sage Park townhomes in Portola Springs.", url: "https://www.irvineclt.org/sage-park/", first: "Offer one city-owned lot to a land trust partner." },
+  { title: "Deferred down payment loans", lever: "Money", what: "A 0% or low-rate loan with no monthly payment, repaid on sale. Raises what a family can pay almost dollar for dollar.", example: "Santa Ana My First Home, up to $120,000 at 0%.", url: "https://www.santa-ana.org/my-first-home", first: "Set aside part of an existing housing fund as a revolving loan pool." },
+  { title: "Deed-restricted resale homes", lever: "Policy", what: "New projects set aside homes at a price tied to income, with resale limits that keep them affordable.", example: "Tustin and Huntington Beach affordable ownership programs.", url: "https://www.tustinca.org/461/Homeownership-Opportunities", first: "Publish the list of restricted homes and an alert sign-up." },
+  { title: "Build Days with Habitat", lever: "Time", what: "Monthly city Build Days where families earn sweat-equity hours beside volunteers and city staff.", example: "Habitat OC asks 250 hours per adult on a new home for low income.", url: "https://habitatoc.org/your-partnership/", first: "Host one Build Day a month on a city site." },
+  { title: "Homebuyer education in two or three languages", lever: "Education", what: "Free classes with HUD-approved counselors, at libraries and schools, so families arrive ready.", example: "Habitat OC orientations in English, Spanish and Vietnamese.", url: "https://habitatoc.org/attend-an-orientation/", first: "Book a quarterly class at the main library." },
+  { title: "Faster, cheaper approvals for affordable ownership", lever: "Speed", what: "Every month of delay adds holding cost. Fee deferral and a fast lane for affordable ownership cut the gap.", example: "No Orange County example verified. Idea to test.", url: null, first: "Measure months from application to permit on the last 3 affordable projects." },
+  { title: "Employer-assisted housing", lever: "Money", what: "Hospitals, schools and the city itself help their own workers with down payment loans, so staff live near work.", example: "No Orange County example verified. Idea to test.", url: null, first: "Ask the 3 largest employers in the city to co-fund a pilot." },
+  { title: "Count nearly-ready families, never names", lever: "Data", what: "Anonymous counts from readiness checks show how many families are close, so programs are sized to real demand.", example: "The Ready tab is built to keep answers on the family's device.", url: null, first: "Agree a shared, anonymous count with local counselors." },
+];
+
+// GIVE: ways to help beyond money.
+export const GIVE_WAYS = [
+  { kind: "Time", items: ["Build Days on a Habitat OC site", "Mentor a family through escrow", "Teach a money or homebuyer class"] },
+  { kind: "Skills", items: ["Attorneys: contracts and title questions", "Engineers and architects: plan reviews and repairs", "Lenders and agents: free homebuyer workshops", "Accountants: tax help for first-time buyers"] },
+  { kind: "Resources", items: ["Building materials and appliances to a Habitat ReStore", "A lot, a building or office space", "Company volunteer days"] },
+  { kind: "Money", items: ["Close one home's gap", "Fund a down payment loan pool", "Match your employees' gifts"] },
+];

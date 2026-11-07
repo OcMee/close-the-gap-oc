@@ -1,5 +1,5 @@
 // The gap engine. Pure functions, no page code, so every number can be tested.
-import { INCOME, TIERS, ANAHEIM_150, BUYER_AID, HABITAT, READY_SHARE } from "./data.js";
+import { INCOME, TIERS, ANAHEIM_150, BUYER_AID, HABITAT, READY_SHARE, LENDER } from "./data.js";
 
 const num = (x) => (Number.isFinite(Number(x)) ? Number(x) : 0);
 const pos = (x) => Math.max(0, num(x));
@@ -175,4 +175,44 @@ export function buildDays({ homes, adults, hoursPerAdult, hoursPerDay }) {
   const total = pos(homes) * pos(adults) * pos(hoursPerAdult);
   const perAdult = pos(hoursPerDay) > 0 ? Math.ceil(pos(hoursPerAdult) / pos(hoursPerDay)) : 0;
   return { total, perAdult };
+}
+
+// READY: how strong a borrower looks today, with the next step and a number for each.
+export function lenderReady({ income, debts, credit, savings, jobYears, price, ratePct, assume }) {
+  const monthlyIncome = pos(income) / 12;
+  const housing = monthlyIncome * READY_SHARE;
+  const dti = monthlyIncome > 0 ? ((pos(debts) + housing) / monthlyIncome) * 100 : 100;
+  const p = pos(price);
+  const cashNeeded = p * (pos(assume.downPct) + LENDER.closingPct) / 100 + housing * LENDER.months;
+  const tips = [];
+  const add = (status, title, text) => tips.push({ status, title, text });
+  if (dti <= LENDER.dtiTarget) add("good", "Debt-to-income", `${dti.toFixed(0)}% with the new payment. Lenders like ${LENDER.dtiTarget}% or less.`);
+  else {
+    const cut = ((dti - LENDER.dtiTarget) / 100) * monthlyIncome;
+    add(dti <= LENDER.dtiMax ? "work" : "bad", "Debt-to-income", `${dti.toFixed(0)}% with the new payment. Pay down about $${Math.ceil(cut).toLocaleString("en-US")} a month of debt to reach ${LENDER.dtiTarget}%. Start with the smallest balances or the car loan.`);
+  }
+  const c = Math.round(pos(credit));
+  const reached = LENDER.credit.filter(([min]) => c >= min);
+  const next = LENDER.credit.find(([min]) => c < min);
+  if (!reached.length) add("bad", "Credit score", `${c} is under 620, the usual minimum. Pull all three reports, fix errors, and pay every bill on time for 6 to 12 months.`);
+  else add(next ? "work" : "good", "Credit score", `${c} opens: ${reached.map(([, l]) => l).join(", ")}.${next ? ` Reaching ${next[0]} adds: ${next[1]}. Keep card balances under ${LENDER.utilization}% of their limits.` : " Keep it there: no new credit until you have the keys."}`);
+  const gap = cashNeeded - pos(savings);
+  add(gap <= 0 ? "good" : "work", "Cash", gap <= 0
+    ? `You have enough for ${assume.downPct}% down, about ${LENDER.closingPct}% closing costs and ${LENDER.months} months of payments in reserve at a $${Math.round(p).toLocaleString("en-US")} price.`
+    : `About $${Math.round(cashNeeded).toLocaleString("en-US")} needed for ${assume.downPct}% down, closing costs and ${LENDER.months} months of reserves; you are $${Math.round(gap).toLocaleString("en-US")} short. Deferred help can cover part of it. Keep savings in one account for 2 months before applying.`);
+  add(pos(jobYears) >= LENDER.jobYears ? "good" : "work", "Steady income", pos(jobYears) >= LENDER.jobYears
+    ? "Two years or more of steady income. Do not change jobs during escrow."
+    : `Lenders usually want ${LENDER.jobYears} years of steady income in the same line of work. Gather pay stubs and a letter from your employer.`);
+  add("tip", "During the whole process", "No new loans or cards, no large unexplained deposits, and a gift letter for any family money.");
+  return { dti, cashNeeded, tips, score: tips.filter((t) => t.status === "good").length };
+}
+
+// GIVE: what a pledge of time, materials and money does, in counts we can stand behind.
+export function pledgeView({ hours, money, gap }, hoursPerDay = 8) {
+  const g = pos(gap);
+  return {
+    buildDays: pos(hoursPerDay) > 0 ? Math.floor(pos(hours) / pos(hoursPerDay)) : 0,
+    shareOfGap: g > 0 ? Math.min(1, pos(money) / g) : 1,
+    homesClosed: g > 0 ? pos(money) / g : 0,
+  };
 }
