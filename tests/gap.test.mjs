@@ -109,6 +109,13 @@ test("ready check: Santa Ana family of 4 at $118k", () => {
   assert.equal(r.habitat.hours, 250);
 });
 
+test("ready check: housing need by cost is rent over 30% of gross income", () => {
+  const base2 = { size: 4, income: 120000, city: "Santa Ana", residency: "citizen", firstTime: true, debts: 0, ratePct: 7.18, assume: ASSUME };
+  assert.equal(g.readyCheck({ ...base2, rent: 3001 }).habitat.needByCost, true);
+  assert.equal(g.readyCheck({ ...base2, rent: 3000 }).habitat.needByCost, false);
+  near(g.readyCheck({ ...base2, rent: 2700 }).habitat.rentShare, 27, 0.01);
+});
+
 test("ready check: no green card, owned before, high debts", () => {
   const r = g.readyCheck({ size: 2, income: 90000, city: "Stanton", residency: "other", firstTime: false, debts: 2000, ratePct: 7.18, assume: ASSUME });
   assert.equal(r.programs.find((p) => p.program.key === "map").verdict, "no");
