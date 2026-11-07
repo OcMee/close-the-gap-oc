@@ -64,8 +64,22 @@ function numberField(label, get, put, { min = 0, max = 1e7, step = 1, prefix = "
   const id = `f${Math.random().toString(36).slice(2, 8)}`;
   const input = el("input", { id, type: "number", inputmode: "decimal", min, max, step, value: get(),
     onchange: (e) => { set(() => put(clampNum(e.target.value, min, max, get()))); e.target.value = get(); } });
+  // A dial under every number box. Wide ranges use a curve so everyday values get most of the travel.
+  const steps = (max - min) / step;
+  const curved = steps > 200;
+  const N = curved ? 1000 : Math.round(steps);
+  const toPos = (v) => { const f = Math.min(1, Math.max(0, (v - min) / (max - min))); return Math.round((curved ? Math.sqrt(f) : f) * N); };
+  const fromPos = (p) => { const f = p / N; const v = min + (curved ? f * f : f) * (max - min); return Math.min(max, Math.max(min, Math.round(v / step) * step)); };
+  const show = (v) => `${prefix}${Number(v).toLocaleString("en-US")}${suffix ? ` ${suffix}` : ""}`;
+  const dial = el("input", { type: "range", class: "dial", min: 0, max: N, step: 1, value: toPos(get()), "aria-label": `${label}, dial`,
+    oninput: (e) => set(() => { put(fromPos(Number(e.target.value))); input.value = get(); }) });
+  subs.push(() => {
+    if (document.activeElement !== input) input.value = get();
+    if (document.activeElement !== dial) dial.value = toPos(get());
+    dial.setAttribute("aria-valuetext", show(get()));
+  });
   return el("div", { class: "field" }, el("label", { for: id }, label, status ? tag(status) : null),
-    el("div", { class: "num" }, prefix ? el("span", { text: prefix }) : null, input, suffix ? el("span", { text: suffix }) : null), note ? el("p", { class: "note", text: note }) : null);
+    el("div", { class: "num" }, prefix ? el("span", { text: prefix }) : null, input, suffix ? el("span", { text: suffix }) : null), dial, note ? el("p", { class: "note", text: note }) : null);
 }
 function rangeField(label, get, put, { min, max, step, fmt, note }) {
   const id = `r${Math.random().toString(36).slice(2, 8)}`;
