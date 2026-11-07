@@ -181,6 +181,7 @@ function tabs(panels) {
       document.getElementById(`panel-${pid}`).hidden = pid !== id;
       document.getElementById(`tab-${pid}`).setAttribute("aria-selected", pid === id ? "true" : "false");
     }
+    document.dispatchEvent(new CustomEvent("chapter", { detail: { id, scroll: true } }));
   };
   return show;
 }
@@ -781,6 +782,64 @@ function aduSection() {
       el("p", { class: "note", text: "Format: one Saturday, city planning staff as judges, UCI and community college students, local builders and architects. Winning tools are handed to the city as open source (MIT) so any Orange County city can use them. We do not know each city's current ADU review time; the city enters its own number." })));
 }
 
+
+// The chapter banner: makes the move between Ready, Together and Give visible.
+// Read the three as one sentence: Get ready. Get together. Give back. I, we, you.
+const CHAPTERS = [
+  { id: "ready", n: 1, verb: "Get", word: "ready.", who: "I", whoLong: "For the family", img: "img/saving.jpg", alt: "A family counting savings at the kitchen table",
+    line: "Learn the path, check which programs fit, read your own documents and look stronger to a lender." },
+  { id: "together", n: 2, verb: "Get", word: "together.", who: "We", whoLong: "For the city and the nonprofit", img: "img/framing.jpg", alt: "Volunteers raising a wall frame on a build site",
+    line: "Price one home, see who closes the gap, and take ready-made programs to council." },
+  { id: "give", n: 3, verb: "Give", word: "back.", who: "You", whoLong: "For the neighbor and the business", img: "img/gala.jpg", alt: "Guests at a community gala",
+    line: "Time, skills, goods and money, each one tied to a real gap. Demo only: nothing is charged." },
+];
+function chapterBanner() {
+  const sentence = el("p", { class: "ch-sentence" });
+  const bar = el("div", { class: "ch-bar", "aria-hidden": "true" });
+  const num = el("span", { class: "ch-num" });
+  const who = el("p", { class: "ch-who" });
+  const big = el("h2", { class: "ch-big" });
+  const line = el("p", { class: "ch-line" });
+  const pic = el("img", { class: "ch-pic", width: "1200", height: "800", alt: "" });
+  const nav = el("div", { class: "ch-nav" });
+  const body = el("div", { class: "ch-body" }, el("div", { class: "ch-text" }, num, who, big, line, nav), pic);
+  const box = el("section", { class: "chapter", id: "chapter", "aria-live": "polite" }, sentence, bar, body);
+  const cap = (s) => s[0].toUpperCase() + s.slice(1);
+  const go = (id) => { showTab(id); };
+  let current = 0;
+  const render = (id, animate) => {
+    const i = Math.max(0, CHAPTERS.findIndex((c) => c.id === id));
+    const c = CHAPTERS[i];
+    const dir = i > current ? "fwd" : i < current ? "back" : "";
+    current = i;
+    box.dataset.ch = c.id;
+    sentence.replaceChildren(...CHAPTERS.map((x, k) => el("button", { type: "button", class: "ch-step", "aria-current": k === i ? "step" : "false", onclick: () => go(x.id) },
+      el("span", { class: "ch-step-n", text: String(x.n) }), `${x.verb} ${x.word}`)));
+    bar.replaceChildren(...CHAPTERS.map((x, k) => el("span", { class: k <= i ? "on" : "" })));
+    num.textContent = `Part ${c.n} of 3`;
+    who.replaceChildren(el("b", { text: c.who }), ` ${c.whoLong}`);
+    big.replaceChildren(`${c.verb} `, el("em", { text: c.word }));
+    line.textContent = c.line;
+    pic.src = c.img;
+    pic.alt = c.alt;
+    const prev = CHAPTERS[i - 1], next = CHAPTERS[i + 1];
+    nav.replaceChildren(
+      prev ? el("button", { type: "button", class: "ch-btn ghost", onclick: () => go(prev.id) }, `← Back to ${cap(prev.id)}`) : el("span"),
+      next ? el("button", { type: "button", class: "ch-btn", onclick: () => go(next.id) }, `Next: ${cap(next.id)} →`) : el("button", { type: "button", class: "ch-btn", onclick: () => go("ready") }, "Start again: Ready ↺"));
+    if (animate && dir) {
+      body.classList.remove("in-fwd", "in-back");
+      void body.offsetWidth;
+      body.classList.add(`in-${dir}`);
+    }
+  };
+  document.addEventListener("chapter", (e) => {
+    render(e.detail.id, true);
+    if (e.detail.scroll) box.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
+  });
+  render("ready", false);
+  return box;
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -800,7 +859,7 @@ function intro() {
       el("p", { class: "byline" }, "Orange County Mortgage, Education and Equity, ", el("em", { text: "by Design." }), " Affordable homes do not happen by accident.")));
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
-document.getElementById("main").append(intro(),
+document.getElementById("main").append(intro(), chapterBanner(),
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
