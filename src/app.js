@@ -325,14 +325,16 @@ function tabs(panels) {
   const nav = document.getElementById("tabs");
   const chapter = (id) => CHAPTERS.find((c) => c.id === id);
   const buttons = panels.map(([id], i) => {
-    const c = chapter(id);
-    return el("button", { type: "button", role: "tab", id: `tab-${id}`, "aria-controls": `panel-${id}`, "aria-selected": i === 0 ? "true" : "false", title: c.line, onclick: () => show(id) },
+    const c = chapter(id) || { line: "The pitch deck and the 90-second demo" };
+    return el("button", { type: "button", role: "tab", id: `tab-${id}`, class: chapter(id) ? "" : "tab-plain", "aria-controls": `panel-${id}`, "aria-selected": i === 0 ? "true" : "false", title: c.line, onclick: () => show(id) },
       el("span", { class: "tab-txt" }, el("span", { class: "tab-n" }), el("span", { class: "tab-w" })));
   });
   nav.setAttribute("role", "tablist");
   nav.replaceChildren(...buttons);
   const label = () => panels.forEach(([id], i) => {
-    const c = chapter(id), b = buttons[i], [pre, word] = L().steps[i];
+    const c = chapter(id), b = buttons[i];
+    if (!c) { b.querySelector(".tab-w").textContent = { en: "Demo", es: "Demo", vi: "Demo", zh: "\u6f14\u793a" }[lang] || "Demo"; return; }
+    const [pre, word] = L().steps[i];
     b.querySelector(".tab-n").textContent = `${c.n} \u00b7 ${L().who[i]}`;
     b.querySelector(".tab-w").replaceChildren(pre, el("em", { text: word }));
   });
@@ -1201,6 +1203,43 @@ function mapSection() {
         el("table", { class: "tbl pm-tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "City" }), el("th", { text: "Site" }), el("th", { text: "Homes" }), el("th", { text: "Open per home" }))), rows))));
 }
 
+// DEMO: the pitch deck as images, with the 90-second video on slide 8.
+const DECK = [
+  "The Affordable Home Initiative", "10 years in the UK: 3 homes bought", "3 years in the US: 3 escrows opened, 0 closed",
+  "What OCMEED stands for", "California already has Help to Buy", "One affordable home, one gap",
+  "The friend at the party, for every family", "The 90-second demo", "What is real, and what is mocked", "Let's build that path here",
+];
+function demoSection() {
+  let i = 0;
+  const stage = el("div", { class: "deck-stage" });
+  const count = el("span", { class: "deck-count", "aria-live": "polite" });
+  const thumbs = el("div", { class: "deck-thumbs", role: "group", "aria-label": "All slides" }, DECK.map((t, k) => el("button", { type: "button", "aria-label": `Slide ${k + 1}: ${t}`, onclick: () => go(k) },
+    el("img", { src: `media/slide-${String(k + 1).padStart(2, "0")}.jpg`, alt: "", width: "192", height: "108", loading: "lazy" }))));
+  const go = (k) => {
+    i = (k + DECK.length) % DECK.length;
+    const src = `media/slide-${String(i + 1).padStart(2, "0")}.jpg`;
+    if (i === 7) {
+      const v = el("video", { src: "media/demo-90s.mp4", poster: src, controls: true, preload: "none", playsinline: true, "aria-label": "The 90-second demo of theAhome.ocmeed.com" });
+      stage.replaceChildren(v);
+    } else {
+      stage.replaceChildren(el("img", { src, alt: `Slide ${i + 1}: ${DECK[i]}`, width: "1920", height: "1080" }));
+    }
+    count.textContent = `${i + 1} / ${DECK.length} \u00b7 ${DECK[i]}`;
+    [...thumbs.children].forEach((b, k2) => b.setAttribute("aria-current", k2 === i ? "true" : "false"));
+  };
+  const box = el("div", { class: "deck", tabindex: "0", "aria-label": "Pitch deck. Use the left and right arrow keys to move between slides." }, stage);
+  box.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1); } if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1); } });
+  go(0);
+  return section("demo", "Demo", "The pitch, slide by slide", "Our ten-slide pitch from the Claude Impact Lab at UC Irvine, 7 November 2026. Slide 8 is the 90-second demo video.",
+    box,
+    el("div", { class: "deck-bar" },
+      el("button", { type: "button", class: "ghost story-arrow", "aria-label": "Previous slide", onclick: () => go(i - 1) }, "\u2190"),
+      count,
+      el("button", { type: "button", class: "ghost story-arrow", "aria-label": "Next slide", onclick: () => go(i + 1) }, "\u2192"),
+      el("a", { class: "ghost deck-dl", href: "media/pitch-deck.pdf", download: "the-affordable-home-initiative.pdf", text: "Download the deck (PDF)" })),
+    thumbs);
+}
+
 function intro() {
   const T = L();
   const base = [["OC", "Orange County"], ["M", "Mortgage"], ["E", "Education"], ["E", "Equity"], ["D", "Design"]];
@@ -1253,9 +1292,10 @@ document.getElementById("main").append(introEl,
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), mapSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), carSection(), volunteerSection(), eventsSection(), giveSection(), pillarsSection()),
+  panel("demo", demoSection()),
   sourcesSection());
 document.getElementById("tabs").before(langSwitch());
-showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
+showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"], ["demo", "Demo"]]);
 paint();
 
 if (lang !== "en") { const start = lang; lang = "en"; setLang(start); }
