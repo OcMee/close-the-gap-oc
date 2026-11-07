@@ -375,7 +375,7 @@ function sourcesSection() {
 
 function intro() {
   const letters = [
-    ["O C", "Orange County", "Where the people who work here can live here."],
+    ["OC", "Orange County", "Where the people who work here can live here."],
     ["M", "Mortgage", "A way in for working families. Ready."],
     ["E", "Equity", "Homes that build wealth and stay affordable. Together."],
     ["E", "Education", "Classes, counseling and sweat equity. Ready and Together."],
