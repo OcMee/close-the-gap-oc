@@ -1,6 +1,8 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
 import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit } from "./gap.js";
+import { pdfText } from "./pdftext.js";
+import { analyze, buildProfile, TYPE_LABEL } from "./doccheck.js";
 
 const SVG = "http://www.w3.org/2000/svg";
 function el(tag, attrs = {}, ...kids) {
@@ -497,6 +499,112 @@ function atlasSection() {
     count, grid);
 }
 
+
+// READY: verify a profile from documents. PDFs are read on this device; nothing is uploaded.
+function docsSection() {
+  const R = S.ready;
+  const results = [];
+  const list = el("div", { class: "docs" });
+  const profileBox = el("div", { class: "profile" });
+  const status = el("p", { class: "answer small", role: "status", text: "Add pay stubs, a bank statement, a Loan Estimate or notices as PDF files." });
+  const LEVEL = { fix: "Fix or explain", watch: "Watch" };
+  const paint2 = () => {
+    list.replaceChildren(...results.map((r) => el("article", { class: "doc" },
+      el("div", { class: "row" }, el("b", { text: r.name }), el("span", { class: "lever", text: TYPE_LABEL[r.type] })),
+      el("ul", { class: "plain" }, r.facts.map((f) => el("li", { text: f }))),
+      r.flags.length ? el("ul", { class: "reasons" }, r.flags.map((f) => el("li", { class: f.level === "fix" ? "miss" : "ask" }, el("b", { text: `${LEVEL[f.level]}: ` }), f.text))) : el("p", { class: "note", text: "Nothing flagged in this document." }))));
+    const fixes = results.reduce((s, r) => s + r.flags.filter((f) => f.level === "fix").length, 0);
+    status.textContent = results.length ? `${results.length} document${results.length > 1 ? "s" : ""} read on this device. ${fixes} item${fixes === 1 ? "" : "s"} to fix or explain before applying.` : "Add pay stubs, a bank statement, a Loan Estimate or notices as PDF files.";
+    const p = buildProfile(results);
+    if (!results.some((r) => r.type === "paystub" || r.type === "bank")) { profileBox.replaceChildren(); return; }
+    const rows = [
+      ["Applicants", p.people.join(" and ") || "Not found"],
+      ["Gross monthly income", p.incomeHigh ? `${money(p.incomeLow)} to ${money(p.incomeHigh)} (base pay to year-to-date average)` : "Add pay stubs"],
+      ["Current rent", p.rent != null ? money(p.rent) : "Add a bank statement"],
+      ["Monthly debts", p.debtParts ? `${money(p.debts)}: auto ${money(p.debtParts.auto)}, card ${money(p.debtParts.card)}, pay-later ${money(p.debtParts.payLater)}` : "Add a bank statement"],
+      ["Checking / savings", p.checking != null ? `${money(p.checking)} / ${money(p.savings)}` : "Add a bank statement"],
+      ["Large or cash deposits", p.cashDeposits.length ? p.cashDeposits.map((c) => `${money(c.amount)} on ${c.day}, source unknown`).join("; ") : "None found"],
+      ["Overdraft or NSF events", String(p.nsf)],
+      ["Under 2 years in the job", p.shortHistory.length ? p.shortHistory.join(", ") : "None found"],
+    ];
+    if (p.housingRatio) {
+      rows.push(["Housing cost / gross income", `${Math.round(p.housingRatio[0] * 100)}% to ${Math.round(p.housingRatio[1] * 100)}%`]);
+      rows.push(["All debts / gross income", `${Math.round(p.totalRatio[0] * 100)}% to ${Math.round(p.totalRatio[1] * 100)}%`]);
+      if (p.cashGap != null) rows.push(["Cash to close vs savings", p.cashGap > 0 ? `${money(p.cashGap)} short` : "Covered"]);
+    }
+    rows.push(["Still missing", p.missing.join("; ")]);
+    profileBox.replaceChildren(el("h3", { text: "Family profile, filled from the documents" }),
+      el("table", { class: "tbl" }, el("tbody", {}, rows.map(([k, v]) => el("tr", {}, el("th", { text: k }), el("td", { text: v }))))),
+      el("p", { class: "note", text: "Ratios are shown for staff to judge; the tool does not apply a lender cutoff." }),
+      el("button", { type: "button", class: "chip", onclick: () => set(() => {
+        if (p.incomeLow) R.income = Math.round((p.incomeLow * 12) / 100) * 100;
+        if (p.debtParts) R.debts = Math.round(p.debts);
+        if (p.rent != null) R.rent = Math.round(p.rent);
+        if (p.savings != null) R.savings = Math.round(p.savings);
+        location.hash = "#ready";
+      }) }, "Use these numbers in the Ready check"));
+  };
+  const input = el("input", { id: "doc-files", type: "file", accept: "application/pdf,.pdf", multiple: true, onchange: async (e) => {
+    const files = [...e.target.files].slice(0, 20);
+    for (const file of files) {
+      if (file.size > 5000000) { results.push({ name: file.name, type: "unknown", facts: ["File over 5 MB, skipped."], flags: [] }); continue; }
+      try {
+        const lines = await pdfText(await file.arrayBuffer());
+        results.push({ name: file.name, ...analyze(lines) });
+      } catch {
+        results.push({ name: file.name, type: "unknown", facts: ["Could not read this PDF. Scanned or photographed pages need text recognition, which this demo does not do."], flags: [] });
+      }
+    }
+    e.target.value = "";
+    paint2();
+  } });
+  return section("docs", "1. Ready: check documents", "Verify a profile from the documents", "A counselor drops in the family's PDFs. The tool reads them on this device, fills the profile, and flags what a careful caseworker would: hidden debt, unexplained deposits, payments that leave things out.",
+    el("div", { class: "drop" }, el("label", { for: "doc-files", class: "chip" }, "Choose PDF documents"), input,
+      el("button", { type: "button", class: "ghost", onclick: () => { results.length = 0; paint2(); } }, "Clear")),
+    el("p", { class: "note", text: "Nothing is uploaded. Use made-up demo documents only; never a real family's papers in a demo. Photos of documents need text recognition, which is a next step." }),
+    status, list, profileBox);
+}
+
+// TOGETHER: the story of one home, from an empty lot to a front door.
+const STORY = [
+  ["lot", "An empty lot", "Land is the biggest cost. A city or church that offers one lot removes the largest line in the budget."],
+  ["city-hall", "The city says yes", "Faster permits and deferred fees cut months of holding cost."],
+  ["planning", "Neighbors plan together", "A community meeting shows the design, the price and who it is for."],
+  ["future-homes", "Families get ready", "Families use Ready to learn the path, check programs and fix what a lender will ask."],
+  ["framing", "Build Day", "Families earn sweat-equity hours beside volunteers."],
+  ["truss", "The roof goes up", "Donated materials and skilled volunteers keep the cost down."],
+  ["painting", "Everyone helps", "Students, retirees and company teams paint, plant and finish."],
+  ["mentor", "Skills passed on", "A retired engineer teaches a teen to measure twice and cut once."],
+  ["lunch", "The street eats together", "Lunch for the crew. Neighbors meet the family moving in."],
+  ["home", "A front door", "Keys, at a price the family can carry for 30 years."],
+];
+function storyStrip() {
+  return section("story", "Together: one home, start to finish", "From an empty lot to a front door", "Illustrations of how a community closes the gap together. Made-up scenes, not real people.",
+    el("div", { class: "story" }, STORY.map(([img, title, text], i) => el("figure", { class: "frame" },
+      el("img", { src: `img/${img}.jpg`, alt: title, width: 1200, height: 674, loading: i < 2 ? "eager" : "lazy" }),
+      el("figcaption", {}, el("span", { class: "n", text: String(i + 1) }), el("b", { text: title }), el("span", { text: text }))))));
+}
+
+// GIVE: events that bring the county together.
+const EVENTS = [
+  { img: "community-day", title: "City Day", who: "Families, city staff, nonprofits, lenders", raises: "Awareness and ready families", how: "Ready on tablets: families check programs and documents with a counselor on the spot.", first: "Ask the city to host one Saturday at a park or library." },
+  { img: "framing", title: "Orange County Community Build Day", who: "Volunteers, companies, families earning sweat equity", raises: "Time and skills", how: "The Build Day planner sizes the crew; the pledge planner records hours.", first: "Partner with Habitat OC on one site, one Saturday a month." },
+  { img: "gala", title: "Leaders and Donors Gala", who: "Business owners, retired leaders, philanthropists, council members", raises: "Money and big commitments", how: "Give, live on screen: each pledge shows the share of one home's gap it closes.", first: "Pick one real project and show its gap on the night." },
+  { img: "lunch", title: "Neighborhood Lunch and Learn", who: "Renters, first-time buyers, neighbors", raises: "Education", how: "The six Ready lessons and the mortgage atlas, taught in plain language.", first: "Book a library room, invite a HUD-approved counselor." },
+  { img: "mentor", title: "Pro Bono Day", who: "Attorneys, engineers, lenders, accountants", raises: "Skills families would otherwise pay for", how: "Volunteers review documents and plans; the document check prepares the files first.", first: "Ask one professional association to send five volunteers." },
+  { img: "council", title: "Council Housing Night", who: "Council members, planners, residents", raises: "Land, fee and permit decisions", how: "Together shows what land, fees and delay do to the gap, in dollars.", first: "Request ten minutes on a council agenda with one home's numbers." },
+];
+function eventsSection() {
+  return section("events", "3. Give: bring the county together", "Events that turn neighbors into builders and backers", "Six ways to get people aware, working and contributing. Each one has a job, an audience and a first step.",
+    el("div", { class: "events" }, EVENTS.map((ev) => el("article", { class: "event" },
+      el("img", { src: `img/${ev.img}.jpg`, alt: ev.title, width: 1200, height: 674, loading: "lazy" }),
+      el("div", { class: "event-body" },
+        el("h3", { text: ev.title }),
+        el("dl", {}, el("dt", { text: "Who" }), el("dd", { text: ev.who }), el("dt", { text: "Brings" }), el("dd", { text: ev.raises }), el("dt", { text: "Tool" }), el("dd", { text: ev.how })),
+        el("p", { class: "first" }, el("b", { text: "First step: " }), ev.first))))),
+    el("p", { class: "note", text: "Illustrations, not real events. Dates, venues and partners are for each city and nonprofit to set." }));
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -517,9 +625,9 @@ function intro() {
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
-  panel("ready", learnSection(), readySection(), borrowerSection(), atlasSection()),
-  panel("together", hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
-  panel("give", giveSection(), pillarsSection()),
+  panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
+  panel("together", storyStrip(), hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
+  panel("give", eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
 paint();
