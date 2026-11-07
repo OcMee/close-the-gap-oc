@@ -2,6 +2,10 @@
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
 import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside, aduSpeed } from "./gap.js";
 import { pdfText } from "./pdftext.js";
+import { LANGS, I18N } from "./lang.js";
+let lang = "en";
+try { const saved = localStorage.getItem("lang"); if (I18N[saved]) lang = saved; } catch { /* storage blocked */ }
+const L = () => I18N[lang];
 import { analyze, buildProfile, TYPE_LABEL } from "./doccheck.js";
 
 const SVG = "http://www.w3.org/2000/svg";
@@ -173,16 +177,44 @@ function leversSection() {
 
 function tabs(panels) {
   const nav = document.getElementById("tabs");
-  const buttons = panels.map(([id, label], i) => el("button", { type: "button", role: "tab", id: `tab-${id}`, "aria-controls": `panel-${id}`, "aria-selected": i === 0 ? "true" : "false", onclick: () => show(id) }, label));
+  const chapter = (id) => CHAPTERS.find((c) => c.id === id);
+  const buttons = panels.map(([id], i) => {
+    const c = chapter(id);
+    return el("button", { type: "button", role: "tab", id: `tab-${id}`, "aria-controls": `panel-${id}`, "aria-selected": i === 0 ? "true" : "false", title: c.line, onclick: () => show(id) },
+      el("img", { class: "tab-pic", src: c.img, alt: "", width: "36", height: "36" }),
+      el("span", { class: "tab-txt" }, el("span", { class: "tab-n" }), el("span", { class: "tab-w" })));
+  });
   nav.setAttribute("role", "tablist");
   nav.replaceChildren(...buttons);
+  const label = () => panels.forEach(([id], i) => {
+    const c = chapter(id), b = buttons[i], [pre, word] = L().steps[i];
+    b.querySelector(".tab-n").textContent = `${c.n} \u00b7 ${L().who[i]}`;
+    b.querySelector(".tab-w").replaceChildren(pre, el("em", { text: word }));
+  });
+  label();
+  document.addEventListener("langchange", label);
+  const progress = el("div", { class: "tab-progress", "aria-hidden": "true" }, el("span"));
+  nav.closest("header").append(progress);
+  let current = 0;
   const show = (id) => {
+    const i = panels.findIndex(([pid]) => pid === id);
+    const dir = i > current ? "fwd" : i < current ? "back" : "";
+    current = i;
     for (const [pid] of panels) {
       document.getElementById(`panel-${pid}`).hidden = pid !== id;
       document.getElementById(`tab-${pid}`).setAttribute("aria-selected", pid === id ? "true" : "false");
     }
-    document.dispatchEvent(new CustomEvent("chapter", { detail: { id, scroll: true } }));
+    progress.firstChild.style.width = `${((i + 1) / panels.length) * 100}%`;
+    const p = document.getElementById(`panel-${id}`);
+    if (dir) {
+      p.classList.remove("in-fwd", "in-back");
+      void p.offsetWidth;
+      p.classList.add(`in-${dir}`);
+    }
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (p.getBoundingClientRect().top < 0 || p.getBoundingClientRect().top > innerHeight * 0.6) p.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
   };
+  progress.firstChild.style.width = `${100 / panels.length}%`;
   return show;
 }
 
@@ -793,76 +825,52 @@ const CHAPTERS = [
   { id: "give", n: 3, verb: "Give", word: "back.", who: "You", whoLong: "For the neighbor and the business", img: "img/gala.jpg", alt: "Guests at a community gala",
     line: "Time, skills, goods and money, each one tied to a real gap. Demo only: nothing is charged." },
 ];
-function chapterBanner() {
-  const sentence = el("p", { class: "ch-sentence" });
-  const bar = el("div", { class: "ch-bar", "aria-hidden": "true" });
-  const num = el("span", { class: "ch-num" });
-  const who = el("p", { class: "ch-who" });
-  const big = el("h2", { class: "ch-big" });
-  const line = el("p", { class: "ch-line" });
-  const pic = el("img", { class: "ch-pic", width: "1200", height: "800", alt: "" });
-  const nav = el("div", { class: "ch-nav" });
-  const body = el("div", { class: "ch-body" }, el("div", { class: "ch-text" }, num, who, big, line, nav), pic);
-  const box = el("section", { class: "chapter", id: "chapter", "aria-live": "polite" }, sentence, bar, body);
-  const cap = (s) => s[0].toUpperCase() + s.slice(1);
-  const go = (id) => { showTab(id); };
-  let current = 0;
-  const render = (id, animate) => {
-    const i = Math.max(0, CHAPTERS.findIndex((c) => c.id === id));
-    const c = CHAPTERS[i];
-    const dir = i > current ? "fwd" : i < current ? "back" : "";
-    current = i;
-    box.dataset.ch = c.id;
-    sentence.replaceChildren(...CHAPTERS.map((x, k) => el("button", { type: "button", class: "ch-step", "aria-current": k === i ? "step" : "false", onclick: () => go(x.id) },
-      el("span", { class: "ch-step-n", text: String(x.n) }), `${x.verb} ${x.word}`)));
-    bar.replaceChildren(...CHAPTERS.map((x, k) => el("span", { class: k <= i ? "on" : "" })));
-    num.textContent = `Part ${c.n} of 3`;
-    who.replaceChildren(el("b", { text: c.who }), ` ${c.whoLong}`);
-    big.replaceChildren(`${c.verb} `, el("em", { text: c.word }));
-    line.textContent = c.line;
-    pic.src = c.img;
-    pic.alt = c.alt;
-    const prev = CHAPTERS[i - 1], next = CHAPTERS[i + 1];
-    nav.replaceChildren(
-      prev ? el("button", { type: "button", class: "ch-btn ghost", onclick: () => go(prev.id) }, `← Back to ${cap(prev.id)}`) : el("span"),
-      next ? el("button", { type: "button", class: "ch-btn", onclick: () => go(next.id) }, `Next: ${cap(next.id)} →`) : el("button", { type: "button", class: "ch-btn", onclick: () => go("ready") }, "Start again: Ready ↺"));
-    if (animate && dir) {
-      body.classList.remove("in-fwd", "in-back");
-      void body.offsetWidth;
-      body.classList.add(`in-${dir}`);
-    }
-  };
-  document.addEventListener("chapter", (e) => {
-    render(e.detail.id, true);
-    if (e.detail.scroll) box.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-  });
-  render("ready", false);
-  return box;
+function intro() {
+  const T = L();
+  const base = [["OC", "Orange County"], ["M", "Mortgage"], ["E", "Education"], ["E", "Equity"], ["D", "Design"]];
+  return el("section", { class: "intro", lang },
+    T.note ? el("p", { class: "lang-note", text: T.note }) : null,
+    el("p", { class: "eyebrow", text: T.eyebrow }),
+    el("h1", {}, T.h1[0], el("em", { text: T.h1[1] })),
+    el("p", { class: "motto" }, T.motto[0], el("em", { text: T.motto[1] })),
+    el("p", { class: "lead", text: T.lead }),
+    el("div", { class: "acronym" },
+      el("p", { class: "acronym-title" }, T.acronym[0], el("b", { text: "OCMEED" }), T.acronym[1]),
+      el("ol", { class: "letters" }, base.map(([l, w], i) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: T.words[i] ? `${w} \u00b7 ${T.words[i]}` : w }), el("span", { class: "d", text: T.desc[i] })))),
+      el("p", { class: "byline" }, T.byline[0], el("em", { text: T.byline[1] }), T.byline[2])));
 }
 
-function intro() {
-  const letters = [
-    ["OC", "Orange County", "Where the people who work here can live here."],
-    ["M", "Mortgage", "A way in for working families. Ready."],
-    ["E", "Education", "Classes, counseling and sweat equity. Ready and Together."],
-    ["E", "Equity", "Homes that build wealth and stay affordable. Together."],
-    ["D", "Design", "The plan that puts it together, with every number sourced. Give."],
-  ];
-  return el("section", { class: "intro" },
-    el("p", { class: "eyebrow", text: "OCMEE Design presents" }),
-    el("h1", {}, "The Affordable Home ", el("em", { text: "Initiative" })),
-    el("p", { class: "motto" }, "Every working family a way in. ", el("em", { text: "Every neighbor a way to help." })),
-    el("p", { class: "lead", text: "Ready teaches a family the path, checks which programs fit and shows how to look stronger to a lender. Together gives a city or nonprofit the cost of one home, who closes the gap and programs it can start. Give lets the pillars of the community help with time, skills, resources and money. Same sources, one story." }),
-    el("div", { class: "acronym" },
-      el("p", { class: "acronym-title" }, "What ", el("b", { text: "OCMEED" }), " stands for"),
-      el("ol", { class: "letters" }, letters.map(([l, w, d]) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: w }), el("span", { class: "d", text: d })))),
-      el("p", { class: "byline" }, "Orange County Mortgage, Education and Equity, ", el("em", { text: "by Design." }), " Affordable homes do not happen by accident.")));
+// Language flip in the header: EN, ES, VI, 中文.
+function langSwitch() {
+  const box = el("div", { class: "langs", role: "group", "aria-label": "Language" });
+  const paint = () => box.replaceChildren(...LANGS.map(([code, short, name]) => el("button", { type: "button", lang: code, "aria-pressed": code === lang ? "true" : "false", "aria-label": name, title: name, onclick: () => setLang(code) }, short)));
+  paint();
+  document.addEventListener("langchange", paint);
+  return box;
+}
+let introEl;
+function setLang(code) {
+  if (!I18N[code] || code === lang) return;
+  lang = code;
+  try { localStorage.setItem("lang", code); } catch { /* storage blocked */ }
+  document.documentElement.lang = code === "zh" ? "zh-Hans" : code;
+  for (const n of document.querySelectorAll(".notice")) n.textContent = L().notice;
+  const brand = document.querySelector(".brand-name");
+  if (brand) brand.textContent = L().brand;
+  const fresh = intro();
+  introEl.replaceWith(fresh);
+  introEl = fresh;
+  document.dispatchEvent(new Event("langchange"));
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
-document.getElementById("main").append(intro(), chapterBanner(),
+introEl = intro();
+document.getElementById("main").append(introEl,
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
+document.getElementById("tabs").before(langSwitch());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);
 paint();
+
+if (lang !== "en") { const start = lang; lang = "en"; setLang(start); }
