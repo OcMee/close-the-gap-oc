@@ -323,7 +323,6 @@ function tabs(panels) {
   const buttons = panels.map(([id], i) => {
     const c = chapter(id);
     return el("button", { type: "button", role: "tab", id: `tab-${id}`, "aria-controls": `panel-${id}`, "aria-selected": i === 0 ? "true" : "false", title: c.line, onclick: () => show(id) },
-      el("img", { class: "tab-pic", src: c.img, alt: "", width: "36", height: "36" }),
       el("span", { class: "tab-txt" }, el("span", { class: "tab-n" }), el("span", { class: "tab-w" })));
   });
   nav.setAttribute("role", "tablist");
@@ -1046,7 +1045,7 @@ function aduSection() {
 
 
 // The chapter banner: makes the move between Ready, Together and Give visible.
-// The three parts spell GOD: Get ready. Organize together. Donate.
+// The three parts: Get ready. Organize together. Donate.
 const CHAPTERS = [
   { id: "ready", n: 1, letter: "G", verb: "Get", word: "ready.", who: "I", whoLong: "For the family", img: "img/saving.jpg", alt: "A family counting savings at the kitchen table",
     line: "Learn the path, check which programs fit, read your own documents and look stronger to a lender." },
@@ -1070,7 +1069,7 @@ function intro() {
         const on = document.getElementById(`tab-${c.id}`)?.getAttribute("aria-selected") === "true" || (!document.getElementById(`tab-${c.id}`) && i === 0);
         return el("button", { type: "button", class: "slip", "data-id": c.id, "aria-current": on ? "step" : "false", onclick: () => showTab(c.id) },
           el("img", { src: c.img, alt: "", width: "1200", height: "800" }),
-          el("span", { class: "slip-n", text: c.letter }),
+          el("span", { class: "slip-n", text: String(c.n) }),
           el("span", { class: "slip-w" }, T.steps[i][0], el("em", { text: T.steps[i][1] })));
       }))),
     el("div", { class: "acronym" },

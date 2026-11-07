@@ -1,5 +1,4 @@
 // Language flips for the page shell: notice, title block, OCMEED letters and the three chapters.
-// The slip letters G, O, D stay English in every language, like OCMEED.
 // Calculators, programs and sources stay in English for now. Translations are AI drafts: native speakers must review.
 export const LANGS = [
   ["en", "EN", "English"],
