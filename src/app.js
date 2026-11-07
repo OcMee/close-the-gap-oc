@@ -2,6 +2,7 @@
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
 import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside, aduSpeed } from "./gap.js";
 import { pdfText } from "./pdftext.js";
+import { docxText } from "./docx.js";
 import { LANGS, I18N } from "./lang.js";
 let lang = "en";
 try { const saved = localStorage.getItem("lang"); if (I18N[saved]) lang = saved; } catch { /* storage blocked */ }
@@ -79,6 +80,113 @@ const big = (label) => { const v = el("strong", { class: "big" }); const n = el(
 // Hero: the answer in one line.
 
 // READY: one family, early check.
+
+// READY: a floating atlas of every program and loan type, centered on the family.
+// Orange dots may fit, outlined dots need a check, gray dots do not fit these answers.
+const SHORT = { myhome: "CalHFA MyHome", santaAna: "Santa Ana", gardenGrove: "Garden Grove", anaheim: "Anaheim", map: "County MAP", dream: "Dream For All",
+  conv: "Conventional", hb: "High-balance", homeready: "HomeReady", jumbo: "Jumbo", fha: "FHA", va: "VA", usda: "USDA", calhfa: "CalHFA loan", gsfa: "GSFA", nonqm: "Non-QM", arm: "ARM", buydown: "Rate buydown" };
+const NS = "http://www.w3.org/2000/svg";
+const sv = (tag, attrs = {}, ...kids) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v); for (const k of kids) if (k) n.append(k); return n; };
+function programAtlas() {
+  const W = 960, H = 520;
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, class: "pa-svg", role: "group", "aria-label": "Atlas of programs and loan types for this family" });
+  const cap = el("p", { class: "pa-cap", role: "status", "aria-live": "polite" });
+  const count = el("p", { class: "pa-count" });
+  let nodes = [], links = [], raf = 0, visible = true;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  const tell = (n) => { cap.replaceChildren(el("b", { text: n.name }), ` · ${n.verdictText}. `, n.reason || ""); };
+  const build = () => {
+    const R = S.ready, A = S.atlas;
+    const ready = readyCheck({ ...R, ratePct: S.rate, assume: S.assume });
+    const price = ready.helped.price;
+    const loan = price * (1 - A.downPct / 100);
+    const fam = { credit: R.credit, residency: R.residency, downPct: A.downPct, loan, veteran: A.veteran, selfEmployed: A.selfEmployed, firstTime: R.firstTime, income: R.income };
+    const aidV = { yes: "fit", check: "check", no: "no", closed: "closed" };
+    const aid = ready.programs.map((p) => ({ id: p.program.key, name: p.program.name, label: SHORT[p.program.key] || p.program.name, v: aidV[p.verdict], reason: p.reasons.map((x) => x.text).join(" ") }));
+    const loans = MORTGAGES.map((m) => { const f = mortgageFit(m, fam); return { id: m.id, name: m.name, label: SHORT[m.id] || m.name, v: f.verdict, reason: f.reasons.map((x) => x.text).join(" ") }; });
+    const h = ready.habitat;
+    const hab = { id: "habitat", name: "Habitat for Humanity of Orange County", label: "Habitat OC", v: h.incomeOk && h.residencyOk ? (h.debtOk ? "fit" : "check") : "no",
+      reason: h.incomeOk ? `Income fits the range for ${ready.size} people. ${h.debtOk ? "" : "Debts look high; confirm at orientation."}` : `Habitat's range for ${ready.size} people is ${money(h.min)} to ${money(h.max)}.` };
+    const VT = { fit: "May fit", check: "Check first", no: "Not for these answers", closed: "Closed now" };
+    const center = { x: W / 2, y: H / 2 + 10, r: 48, kind: "family", name: "This family", verdictText: `${R.size} people, ${money(R.income)} a year`, reason: `Price on income ${money(ready.alone)}, with help ${money(ready.helped.price)}.` };
+    const hubs = [
+      { x: 200, y: 210, r: 20, kind: "hub", label: "Down payment help", items: aid },
+      { x: 775, y: 225, r: 20, kind: "hub", label: "Loan types", items: loans },
+      { x: 480, y: 455, r: 20, kind: "hub", label: "Nonprofit path", items: [hab] },
+    ];
+    nodes = [center];
+    links = [];
+    for (const hb of hubs) {
+      hb.name = hb.label; hb.verdictText = `${hb.items.filter((i) => i.v === "fit").length} may fit`; hb.reason = "";
+      nodes.push(hb);
+      links.push({ a: center, b: hb, on: hb.items.some((i) => i.v === "fit") });
+      const ring = hb.items.length > 6 ? 150 : hb.items.length > 1 ? 115 : 0;
+      hb.items.forEach((it, k) => {
+        const ang = hb.items.length === 1 ? Math.PI / 2 : (k / hb.items.length) * Math.PI * 2 - Math.PI / 2 + (hb.x > W / 2 ? 0.2 : -0.2);
+        const n = { ...it, kind: "prog", x: hb.items.length === 1 ? hb.x + 120 : hb.x + Math.cos(ang) * ring, y: hb.items.length === 1 ? hb.y : hb.y + Math.sin(ang) * ring * 0.85,
+          r: it.v === "fit" ? 16 : it.v === "check" ? 13 : 9, verdictText: VT[it.v], ang: hb.items.length === 1 ? 0 : ang };
+        n.x = Math.max(60, Math.min(W - 60, n.x)); n.y = Math.max(24, Math.min(H - 30, n.y));
+        nodes.push(n);
+        links.push({ a: hb, b: n, on: it.v === "fit", ask: it.v === "check" });
+      });
+    }
+    nodes.forEach((n, i) => { n.ph = i * 1.7; n.amp = n.kind === "family" ? 3 : n.kind === "hub" ? 5 : 9; n.sp = 0.0006 + (i % 5) * 0.00012; n.dx = 0; n.dy = 0; });
+    const lineLayer = sv("g", { class: "pa-links" });
+    for (const l of links) { l.el = sv("line", { class: `pa-link${l.on ? " on" : l.ask ? " ask" : ""}` }); lineLayer.append(l.el); }
+    const nodeLayer = sv("g");
+    for (const n of nodes) {
+      const g = sv("g", { class: `pa-node k-${n.kind}${n.v ? ` v-${n.v}` : ""}`, tabindex: "0", role: "button", "aria-label": `${n.name}: ${n.verdictText}` });
+      if (n.kind === "family") {
+        g.append(sv("circle", { r: n.r + 10, class: "pa-glow" }), sv("circle", { r: n.r }));
+        const t1 = sv("text", { y: -3, class: "pa-in" }); t1.textContent = `${R.size} people`;
+        const t2 = sv("text", { y: 18, class: "pa-in small" }); t2.textContent = `${money(R.income / 1000)}K`;
+        g.append(t1, t2);
+      } else {
+        g.append(sv("circle", { r: n.r }));
+        if (n.kind !== "family") {
+          const cx = n.kind === "hub" ? 0 : Math.cos(n.ang), sy = n.kind === "hub" ? 1 : Math.sin(n.ang);
+          const side = cx > 0.35 ? "start" : cx < -0.35 ? "end" : "middle";
+          const lx = side === "middle" ? 0 : cx * (n.r + 8), ly = side === "middle" ? (sy < 0 ? -n.r - 8 : n.r + 18) : sy * (n.r + 8) + 5;
+          const t = sv("text", { x: lx.toFixed(1), y: ly.toFixed(1), "text-anchor": side, class: `pa-label${n.kind === "hub" ? " hub" : n.v === "no" || n.v === "closed" ? " dim" : ""}` });
+          t.textContent = n.label;
+          g.append(t);
+        }
+      }
+      const title = sv("title"); title.textContent = `${n.name}: ${n.verdictText}`; g.prepend(title);
+      g.addEventListener("click", () => tell(n));
+      g.addEventListener("focus", () => tell(n));
+      g.addEventListener("mouseenter", () => tell(n));
+      n.el = g;
+      nodeLayer.append(g);
+    }
+    svg.replaceChildren(lineLayer, nodeLayer);
+    place(0);
+    const fits = nodes.filter((n) => n.v === "fit").length, checks = nodes.filter((n) => n.v === "check").length;
+    count.textContent = `${fits} may fit, ${checks} to check, ${nodes.filter((n) => n.kind === "prog").length - fits - checks} not for now.`;
+    tell(center);
+  };
+  const place = (t) => {
+    for (const n of nodes) {
+      n.dx = reduce.matches ? 0 : Math.sin(t * n.sp + n.ph) * n.amp;
+      n.dy = reduce.matches ? 0 : Math.cos(t * n.sp * 1.3 + n.ph) * n.amp;
+      n.el.setAttribute("transform", `translate(${(n.x + n.dx).toFixed(1)} ${(n.y + n.dy).toFixed(1)})`);
+    }
+    for (const l of links) {
+      l.el.setAttribute("x1", (l.a.x + l.a.dx).toFixed(1)); l.el.setAttribute("y1", (l.a.y + l.a.dy).toFixed(1));
+      l.el.setAttribute("x2", (l.b.x + l.b.dx).toFixed(1)); l.el.setAttribute("y2", (l.b.y + l.b.dy).toFixed(1));
+    }
+  };
+  const loop = (t) => { if (visible && !reduce.matches) place(t); raf = requestAnimationFrame(loop); };
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); }).observe(svg);
+  subs.push(build);
+  raf = requestAnimationFrame(loop);
+  return el("div", { class: "pa" },
+    el("div", { class: "pa-head" }, el("span", { class: "lab", text: "Program atlas for this family" }), count),
+    svg,
+    el("p", { class: "pa-legend" }, el("span", { class: "dot fit" }), "May fit ", el("span", { class: "dot check" }), "Check first ", el("span", { class: "dot no" }), "Not for now"),
+    cap);
+}
+
 function readySection() {
   const R = S.ready;
   const group = big("Income group");
@@ -136,6 +244,7 @@ function readySection() {
         el("div", { class: "field" }, el("label", { for: "ready-res" }, "Residency"), res),
         first),
       el("div", {}, group.node, alone.node, helped.node)),
+    programAtlas(),
     el("h3", { text: "Programs" }), list,
     el("h3", { text: "Habitat for Humanity of Orange County" }), habitat, el("p", { class: "note" }, "Three criteria from Habitat: need for improved housing, a steady source of income, and willingness to partner (sweat equity). Questions: Habitat OC Home Ownership, (714) 434-6200 ext. 227. ", src("habitat")),
     el("h3", { text: "Next steps" }), next);
@@ -544,15 +653,16 @@ function docsSection() {
   const results = [];
   const list = el("div", { class: "docs" });
   const profileBox = el("div", { class: "profile" });
-  const status = el("p", { class: "answer small", role: "status", text: "Add pay stubs, a bank statement, a Loan Estimate or notices as PDF files." });
+  const status = el("p", { class: "answer small", role: "status", text: "Add pay stubs, a bank statement, a Loan Estimate or notices: PDF, Word (.docx) or a photo." });
   const LEVEL = { fix: "Fix or explain", watch: "Watch" };
   const paint2 = () => {
     list.replaceChildren(...results.map((r) => el("article", { class: "doc" },
-      el("div", { class: "row" }, el("b", { text: r.name }), el("span", { class: "lever", text: TYPE_LABEL[r.type] })),
+      el("div", { class: "row" }, el("b", { text: r.name }), el("span", { class: "lever", text: r.kindLabel || TYPE_LABEL[r.type] || "Not recognized" })),
+      r.thumb ? el("img", { class: "doc-thumb", src: r.thumb, alt: `Photo: ${r.name}`, width: "320", height: "200" }) : null,
       el("ul", { class: "plain" }, r.facts.map((f) => el("li", { text: f }))),
       r.flags.length ? el("ul", { class: "reasons" }, r.flags.map((f) => el("li", { class: f.level === "fix" ? "miss" : "ask" }, el("b", { text: `${LEVEL[f.level]}: ` }), f.text))) : el("p", { class: "note", text: "Nothing flagged in this document." }))));
     const fixes = results.reduce((s, r) => s + r.flags.filter((f) => f.level === "fix").length, 0);
-    status.textContent = results.length ? `${results.length} document${results.length > 1 ? "s" : ""} read on this device. ${fixes} item${fixes === 1 ? "" : "s"} to fix or explain before applying.` : "Add pay stubs, a bank statement, a Loan Estimate or notices as PDF files.";
+    status.textContent = results.length ? `${results.length} document${results.length > 1 ? "s" : ""} read on this device. ${fixes} item${fixes === 1 ? "" : "s"} to fix or explain before applying.` : "Add pay stubs, a bank statement, a Loan Estimate or notices: PDF, Word (.docx) or a photo.";
     const p = buildProfile(results);
     if (!results.some((r) => r.type === "paystub" || r.type === "bank")) { profileBox.replaceChildren(); return; }
     const rows = [
@@ -582,24 +692,57 @@ function docsSection() {
         location.hash = "#ready";
       }) }, "Use these numbers in the Ready check"));
   };
-  const input = el("input", { id: "doc-files", type: "file", accept: "application/pdf,.pdf", multiple: true, onchange: async (e) => {
+  const asDataUrl = (file) => new Promise((ok, bad) => { const fr = new FileReader(); fr.onload = () => ok(fr.result); fr.onerror = bad; fr.readAsDataURL(file); });
+  // Photos: use the browser's own text detector where it exists (on device). Otherwise keep the photo for staff to read.
+  const photoText = async (file) => {
+    if (!("TextDetector" in window)) return null;
+    try {
+      const bmp = await createImageBitmap(file);
+      const found = await new window.TextDetector().detect(bmp);
+      const items = found.map((f) => ({ y: f.boundingBox.y, x: f.boundingBox.x, t: f.rawValue }));
+      items.sort((p, q) => p.y - q.y || p.x - q.x);
+      const rows = [];
+      for (const it of items) { const last = rows[rows.length - 1]; if (last && Math.abs(last.y - it.y) < 8) last.t += ` ${it.t}`; else rows.push({ ...it }); }
+      return rows.map((r) => r.t);
+    } catch { return null; }
+  };
+  const input = el("input", { id: "doc-files", type: "file", accept: "application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*", multiple: true, onchange: async (e) => {
     const files = [...e.target.files].slice(0, 20);
     for (const file of files) {
-      if (file.size > 5000000) { results.push({ name: file.name, type: "unknown", facts: ["File over 5 MB, skipped."], flags: [] }); continue; }
+      if (results.some((r) => r.name === file.name && r.size === file.size)) continue;
+      const base = { name: file.name, size: file.size };
+      if (file.size > 8000000) { results.push({ ...base, type: "unknown", facts: ["File over 8 MB, skipped."], flags: [] }); continue; }
+      const ext = file.name.toLowerCase().split(".").pop();
       try {
-        const lines = await pdfText(await file.arrayBuffer());
-        results.push({ name: file.name, ...analyze(lines) });
+        if (ext === "pdf" || file.type === "application/pdf") {
+          results.push({ ...base, ...analyze(await pdfText(await file.arrayBuffer())) });
+        } else if (ext === "docx") {
+          results.push({ ...base, ...analyze(await docxText(await file.arrayBuffer())) });
+        } else if (ext === "doc") {
+          results.push({ ...base, type: "unknown", facts: ["Old Word format (.doc). Save it as .docx or PDF and add it again."], flags: [] });
+        } else if (file.type.startsWith("image/")) {
+          const thumb = await asDataUrl(file);
+          const lines = await photoText(file);
+          if (lines && lines.length) {
+            const r = analyze(lines);
+            results.push({ ...base, ...r, thumb, facts: [...r.facts, "Read from a photo by the browser's text detector. Check the numbers against the paper."] });
+          } else {
+            results.push({ ...base, type: "unknown", kindLabel: "Photo", thumb, facts: ["Photo kept on this device for staff to read. This browser cannot read text from photos, so nothing was filled in.", "Best: ask the family for the PDF from the employer or bank portal."], flags: [{ level: "watch", text: "A photo is not enough proof on its own; lenders ask for the original document." }] });
+          }
+        } else {
+          results.push({ ...base, type: "unknown", facts: ["This file type is not supported. Use PDF, Word (.docx) or a photo."], flags: [] });
+        }
       } catch {
-        results.push({ name: file.name, type: "unknown", facts: ["Could not read this PDF. Scanned or photographed pages need text recognition, which this demo does not do."], flags: [] });
+        results.push({ ...base, type: "unknown", facts: ["Could not read this file. Scanned pages inside a PDF are pictures, not text; add them as photos."], flags: [] });
       }
     }
     e.target.value = "";
     paint2();
   } });
   return section("docs", "1. Ready: check documents", "Verify a profile from the documents", "A counselor drops in the family's PDFs. The tool reads them on this device, fills the profile, and flags what a careful caseworker would: hidden debt, unexplained deposits, payments that leave things out.",
-    el("div", { class: "drop" }, el("label", { for: "doc-files", class: "chip" }, "Choose PDF documents"), input,
+    el("div", { class: "drop" }, el("label", { for: "doc-files", class: "chip" }, "Choose documents: PDF, Word or photos"), input,
       el("button", { type: "button", class: "ghost", onclick: () => { results.length = 0; paint2(); } }, "Clear")),
-    el("p", { class: "note", text: "Nothing is uploaded. Use made-up demo documents only; never a real family's papers in a demo. Photos of documents need text recognition, which is a next step." }),
+    el("p", { class: "note", text: "Nothing is uploaded: files are read in this browser and never leave the device. Use made-up demo documents only; never a real family's papers in a demo. The same file added twice is counted once." }),
     status, list, profileBox);
 }
 
