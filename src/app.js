@@ -205,6 +205,7 @@ function tabs(panels) {
       document.getElementById(`tab-${pid}`).setAttribute("aria-selected", pid === id ? "true" : "false");
     }
     progress.firstChild.style.width = `${((i + 1) / panels.length) * 100}%`;
+    for (const s of document.querySelectorAll(".slip")) s.setAttribute("aria-current", s.dataset.id === id ? "step" : "false");
     const p = document.getElementById(`panel-${id}`);
     if (dir) {
       p.classList.remove("in-fwd", "in-back");
@@ -830,10 +831,19 @@ function intro() {
   const base = [["OC", "Orange County"], ["M", "Mortgage"], ["E", "Education"], ["E", "Equity"], ["D", "Design"]];
   return el("section", { class: "intro", lang },
     T.note ? el("p", { class: "lang-note", text: T.note }) : null,
-    el("p", { class: "eyebrow", text: T.eyebrow }),
-    el("h1", {}, T.h1[0], el("em", { text: T.h1[1] })),
-    el("p", { class: "motto" }, T.motto[0], el("em", { text: T.motto[1] })),
-    el("p", { class: "lead", text: T.lead }),
+    el("div", { class: "intro-top" },
+      el("div", { class: "intro-text" },
+        el("p", { class: "eyebrow", text: T.eyebrow }),
+        el("h1", {}, T.h1[0], el("em", { text: T.h1[1] })),
+        el("p", { class: "motto" }, T.motto[0], el("em", { text: T.motto[1] })),
+        el("p", { class: "lead", text: T.lead })),
+      el("nav", { class: "slips", "aria-label": "Parts" }, CHAPTERS.map((c, i) => {
+        const on = document.getElementById(`tab-${c.id}`)?.getAttribute("aria-selected") === "true" || (!document.getElementById(`tab-${c.id}`) && i === 0);
+        return el("button", { type: "button", class: "slip", "data-id": c.id, "aria-current": on ? "step" : "false", onclick: () => showTab(c.id) },
+          el("img", { src: c.img, alt: "", width: "1200", height: "800" }),
+          el("span", { class: "slip-n", text: String(c.n) }),
+          el("span", { class: "slip-w" }, T.steps[i][0], el("em", { text: T.steps[i][1] })));
+      }))),
     el("div", { class: "acronym" },
       el("p", { class: "acronym-title" }, T.acronym[0], el("b", { text: "OCMEED" }), T.acronym[1]),
       el("ol", { class: "letters" }, base.map(([l, w], i) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: T.words[i] ? `${w} \u00b7 ${T.words[i]}` : w }), el("span", { class: "d", text: T.desc[i] })))),
