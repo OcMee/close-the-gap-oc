@@ -1,6 +1,6 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
-import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit } from "./gap.js";
+import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside } from "./gap.js";
 import { pdfText } from "./pdftext.js";
 import { analyze, buildProfile, TYPE_LABEL } from "./doccheck.js";
 
@@ -39,6 +39,8 @@ const S = {
   pledge: { hours: 40, skill: "none", materials: 0, money: 25000 },
   atlas: { downPct: 3.5, veteran: false, selfEmployed: false },
   donate: { cause: "home", amount: 250, custom: "", freq: "monthly", match: false },
+  equity: { price: 700000, equityPct: 20, downPct: 5, years: 10, growthPct: 3 },
+  aside: { homes: 200, setAsidePct: 10, discountPct: 30, marketPrice: 1000000 },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -666,6 +668,72 @@ function donateSection() {
     dlg);
 }
 
+
+// TOGETHER: two proposals a city can bring to council, each with a calculator and its precedents.
+function proposalsSection() {
+  const E = S.equity, A = S.aside;
+  const eStats = el("div", { class: "stats4" });
+  const eSay = el("p", { class: "answer small", role: "status" });
+  const aStats = el("div", { class: "stats4" });
+  const aSay = el("p", { class: "answer small", role: "status" });
+  const stat2 = (label, value, note, bad) => { const v = el("strong", { class: "big", text: value }); if (bad !== undefined) v.dataset.bad = bad ? "1" : "0"; return el("div", { class: "stat" }, el("span", { class: "lab", text: label }), v, el("span", { class: "sub", text: note })); };
+  subs.push(() => {
+    const r = sharedEquity({ ...E, ratePct: S.rate, taxPct: S.assume.taxPct, insPct: S.assume.insPct, pmiPct: S.assume.pmiPct });
+    eStats.replaceChildren(
+      stat2("Equity share put in", money(r.fundIn), `${E.equityPct}% of ${money(E.price)}`),
+      stat2("Monthly cost with it", money(r.monthlyWith), `vs ${money(r.monthlyWithout)} without`, false),
+      stat2("Income needed", money(r.incomeWith), `vs ${money(r.incomeWithout)} without, at 30% of income`),
+      stat2(`Back to the fund in year ${E.years}`, money(r.ukReturn), `If the home grows ${E.growthPct}% a year (ASSUMPTION)`));
+    eSay.textContent = `The family saves ${money(r.saving)} a month and needs ${money(r.incomeWithout - r.incomeWith)} less income to qualify. On sale, the fund gets ${E.equityPct}% of the value back and lends it again: $10 million helps about ${r.homesPerTenMillion} families at a time, then keeps going.`;
+    const b = setAside({ ...A, ratePct: S.rate });
+    aStats.replaceChildren(
+      stat2("Discounted homes", String(b.count), `${A.setAsidePct}% of ${A.homes} new homes`),
+      stat2("Price to the family", money(b.price), `${A.discountPct}% below ${money(A.marketPrice)}`),
+      stat2("Monthly loan payment", money(b.monthlyDiscounted), `vs ${money(b.monthlyMarket)} at market`),
+      stat2("Value kept for families", money(b.valueToFamilies), "Kept at every resale"));
+    aSay.textContent = `Resale rule: ${b.resaleRule}. The discount stays with the home, not the first owner, so it helps a family every time it sells.`;
+  });
+  const n = (label, get, put, o) => numberField(label, get, put, o);
+  return section("proposals", "Together: ideas to bring to council", "Two programs a city can propose", "Each one has worked somewhere. Each needs a city attorney to fit it to California law; we mark what is proven and what is an idea.",
+    el("article", { class: "proposal" },
+      el("h3", { text: "1. Help to Buy, Orange County style: someone else holds 20%" }),
+      el("p", { text: "The family puts down 5%. A city, a nonprofit or a fund puts in 20% as a shared-equity loan: no monthly payment, repaid with the same share of the home's value when the family sells or refinances. The bank lends the other 75%, so there is no mortgage insurance." }),
+      el("div", { class: "grid" },
+        el("div", {},
+          n("Home price", () => E.price, (v) => { E.price = v; }, { min: 100000, max: 3000000, step: 5000, prefix: "$" }),
+          n("Equity share", () => E.equityPct, (v) => { E.equityPct = v; }, { min: 5, max: 40, step: 1, suffix: "%" }),
+          n("Family down payment", () => E.downPct, (v) => { E.downPct = v; }, { min: 0, max: 30, step: 0.5, suffix: "%" }),
+          n("Years until sale", () => E.years, (v) => { E.years = Math.round(v); }, { min: 1, max: 30, step: 1 }),
+          n("Home value growth a year", () => E.growthPct, (v) => { E.growthPct = v; }, { min: -5, max: 10, step: 0.5, suffix: "%", status: "assumption" })),
+        el("div", {}, eStats)),
+      eSay,
+      el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "Who holds the 20%" }), el("th", { text: "Precedent" }), el("th", { text: "Status" }))),
+        el("tbody", {},
+          el("tr", {}, el("td", { text: "The city" }), el("td", {}, "San Francisco DALP: a 0% silent second; the city gets its loan back plus the same share of the gain. ", el("a", { href: "https://sfmohcd.org/dalp-details", target: "_blank", rel: "noopener noreferrer", text: "Source" })), el("td", {}, tag("verified"))),
+          el("tr", {}, el("td", { text: "The state" }), el("td", {}, "CalHFA Dream For All: up to 20%, repaid with a share of the gain. ", src("dream")), el("td", {}, tag("verified"))),
+          el("tr", {}, el("td", { text: "A nonprofit or land trust" }), el("td", { text: "Same loan structure, funded by gifts from the Give tab and recycled on each sale." }), el("td", {}, tag("assumption"))),
+          el("tr", {}, el("td", { text: "An investor fund" }), el("td", { text: "Possible, but it touches securities and lending law, and investors need a return. Needs counsel before any offer." }), el("td", {}, tag("unknown"))))),
+      el("p", { class: "note", text: "UK note: Help to Buy charged interest from year 6 (1.75%, then rising each year). Repayment there was the loan's share of market value; San Francisco repays the loan plus the share of gain. Both come to the same money when the home is sold." })),
+    el("article", { class: "proposal" },
+      el("h3", { text: "2. Builders set aside discounted homes, and the discount stays forever" }),
+      el("p", { text: "Every new development sells a share of its homes below market to local first-time buyers. The deed keeps the same discount at every resale, so the home stays affordable for the next family." }),
+      el("div", { class: "grid" },
+        el("div", {},
+          n("Homes in the development", () => A.homes, (v) => { A.homes = Math.round(v); }, { min: 10, max: 5000, step: 10 }),
+          n("Share set aside", () => A.setAsidePct, (v) => { A.setAsidePct = v; }, { min: 5, max: 30, step: 1, suffix: "%" }),
+          n("Discount below market", () => A.discountPct, (v) => { A.discountPct = v; }, { min: 10, max: 50, step: 5, suffix: "%" }),
+          n("Market price of a home", () => A.marketPrice, (v) => { A.marketPrice = v; }, { min: 200000, max: 3000000, step: 10000, prefix: "$" })),
+        el("div", {}, aStats)),
+      aSay,
+      el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "Where" }), el("th", { text: "Rule" }), el("th", { text: "Status" }))),
+        el("tbody", {},
+          el("tr", {}, el("td", { text: "England, First Homes" }), el("td", { text: "At least 30% below market value, kept in perpetuity; councils could set up to 50%. 25% of affordable homes from developers had to be First Homes until the national rule was dropped in December 2024; local plans can still require them." }), el("td", {}, tag("partly"))),
+          el("tr", {}, el("td", { text: "Irvine" }), el("td", {}, "Inclusionary ordinance: 15% of new homes affordable since 2003; the city's 2023-25 budget says raised to 20%. ", el("a", { href: "https://cityofirvine.gov/node/81916", target: "_blank", rel: "noopener noreferrer", text: "Source" })), el("td", {}, tag("partly"))),
+          el("tr", {}, el("td", { text: "California density bonus" }), el("td", { text: "Builders who include moderate-income for-sale homes get extra density; those homes carry an equity-sharing agreement with the city (Gov. Code 65915(c)(2))." }), el("td", {}, tag("partly"))),
+          el("tr", {}, el("td", { text: "Huntington Beach, Tustin" }), el("td", { text: "Deed-restricted resale homes priced to income, already on the books." }), el("td", {}, tag("verified"))))),
+      el("p", { class: "note", text: "Set-aside rules must leave projects able to pencil, or builders stop building. A city usually pairs them with density bonuses, faster permits or fee cuts." })));
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -687,7 +755,7 @@ function intro() {
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
-  panel("together", storyStrip(), hero(), homeSection(), leversSection(), ideasSection(), familySection(), stackSection(), rateSection()),
+  panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);

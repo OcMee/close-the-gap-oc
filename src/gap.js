@@ -237,3 +237,38 @@ export function mortgageFit(m, { credit, residency, downPct, loan, veteran, self
   if (verdict === "fit") reasons.push({ ok: true, text: "Fits these answers." });
   return { verdict, reasons };
 }
+
+// TOGETHER: two city proposals.
+// 1. Shared equity ("Help to Buy, OC style"): a city, nonprofit or fund puts in a share of the price and gets the
+//    same share of the home's value back on sale (UK Help to Buy) or its money plus the same share of the gain (SF DALP).
+export function sharedEquity({ price, downPct = 5, equityPct = 20, ratePct, years = 10, growthPct = 3, pmiPct = 0.5, taxPct = 1.1, insPct = 0.35 }) {
+  const p = pos(price);
+  const d = pos(downPct) / 100;
+  const e = Math.min(0.5, pos(equityPct) / 100);
+  const f = payFactor(ratePct, 30);
+  const ownCosts = (p * (pos(taxPct) + pos(insPct))) / 1200;
+  const loanWithout = p * (1 - d);
+  const loanWith = p * (1 - d - e);
+  const pmiWithout = 1 - d > 0.8 ? (loanWithout * pos(pmiPct)) / 1200 : 0;
+  const pmiWith = 1 - d - e > 0.8 ? (loanWith * pos(pmiPct)) / 1200 : 0;
+  const monthlyWithout = loanWithout * f + pmiWithout + ownCosts;
+  const monthlyWith = loanWith * f + pmiWith + ownCosts;
+  const futureValue = p * (1 + pos(growthPct) / 100) ** pos(years);
+  const fundIn = p * e;
+  const ukReturn = futureValue * e;
+  const sfReturn = fundIn + e * (futureValue - p);
+  return { fundIn, monthlyWithout, monthlyWith, saving: monthlyWithout - monthlyWith, incomeWithout: (monthlyWithout * 12) / 0.3, incomeWith: (monthlyWith * 12) / 0.3, futureValue, ukReturn, sfReturn, homesPerTenMillion: fundIn > 0 ? Math.floor(10000000 / fundIn) : 0 };
+}
+
+// 2. Builders set aside discounted homes, sold below market and resold at the same discount (UK First Homes style).
+export function setAside({ homes, setAsidePct = 10, discountPct = 30, marketPrice, ratePct, downPct = 5 }) {
+  const n = Math.round(pos(homes));
+  const count = Math.floor((n * pos(setAsidePct)) / 100);
+  const m = pos(marketPrice);
+  const k = Math.min(0.9, pos(discountPct) / 100);
+  const price = m * (1 - k);
+  const f = payFactor(ratePct, 30);
+  const d = pos(downPct) / 100;
+  const pay = (x) => x * (1 - d) * f;
+  return { count, price, discountEach: m * k, valueToFamilies: m * k * count, monthlyMarket: pay(m), monthlyDiscounted: pay(price), resaleRule: `${Math.round(k * 100)}% below market value, every time it sells` };
+}
