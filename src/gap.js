@@ -127,7 +127,7 @@ export function incomeGroup(income, size) {
   return { key: "over", label: "Over 150% of median", limit: ANAHEIM_150[n] };
 }
 
-export function readyCheck({ size, income, city, residency, firstTime, debts, ratePct, assume }) {
+export function readyCheck({ size, income, city, residency, firstTime, debts, rent = 0, ratePct, assume }) {
   const n = Math.max(1, Math.min(8, Math.round(pos(size)) || 1));
   const group = incomeGroup(income, n);
   const programs = BUYER_AID.map((p) => {
@@ -159,6 +159,8 @@ export function readyCheck({ size, income, city, residency, firstTime, debts, ra
     min: HABITAT.min[n - 1], max: INCOME.moderate[n - 1],
     debtOk: debtShare < HABITAT.maxDebtPct, debtShare, debtLimit: (monthlyIncome * HABITAT.maxDebtPct) / 100,
     residencyOk: residency !== "other",
+    rentShare: monthlyIncome > 0 ? (pos(rent) / monthlyIncome) * 100 : 0,
+    needByCost: monthlyIncome > 0 && pos(rent) / monthlyIncome > 0.30,
     hours: HABITAT.hours[group.key] ?? null, resaleHours: HABITAT.resaleHours[group.key] ?? null,
   };
   return { size: n, group, programs, monthly, alone, helped, habitat };

@@ -33,7 +33,7 @@ const S = {
   assume: { ...ASSUME }, deal: DEAL.map((l) => ({ ...l })),
   aid: Object.fromEntries(BUYER_AID.map((p) => [p.key, false])),
   funds: PROJECT_FUNDS.map((f) => ({ ...f, confirmed: false })),
-  ready: { size: 4, income: 118000, debts: 500, city: "Santa Ana", residency: "citizen", firstTime: true },
+  ready: { size: 4, income: 118000, debts: 500, rent: 2700, city: "Santa Ana", residency: "citizen", firstTime: true },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -99,9 +99,10 @@ function readySection() {
     const h = r.habitat;
     habitat.replaceChildren(
       el("li", { class: h.incomeOk ? "met" : "miss", text: h.incomeOk ? `Income fits Habitat's range for ${r.size} people: ${money(h.min)} to ${money(h.max)}.` : `Habitat's range for ${r.size} people is ${money(h.min)} to ${money(h.max)}.` }),
-      el("li", { class: h.debtOk ? "met" : "miss", text: h.debtOk ? `Monthly debts are ${h.debtShare.toFixed(1)}% of gross income, under 10%.` : `Monthly debts are ${h.debtShare.toFixed(1)}% of gross income. Habitat needs under 10%: about ${money(h.debtLimit)} a month.` }),
-      el("li", { class: h.residencyOk ? "met" : "miss", text: h.residencyOk ? "Citizen or permanent resident." : "Habitat requires citizens or permanent residents." }),
-      el("li", { class: "ask", text: "Live or work in Orange County, and show a housing need. Habitat checks these." }),
+      el("li", { class: h.needByCost ? "met" : "ask", text: h.needByCost ? `Need for improved housing: rent is ${h.rentShare.toFixed(0)}% of gross income, over 30%.` : `Need for improved housing: rent is ${h.rentShare.toFixed(0)}% of gross income. Other ways to show need: overcrowded, unhealthy or unsafe housing, or unable to buy at market rate.` }),
+      el("li", { class: h.residencyOk ? "met" : "miss", text: h.residencyOk ? "Citizen or permanent resident who lives or works in Orange County (confirm live or work)." : "Habitat requires U.S. citizens or permanent residents who live or work in Orange County." }),
+      el("li", { class: "ask", text: "Ability to pay a long-term mortgage, a 1% to 5% down payment and closing costs. Credit is reviewed and should be in good standing." }),
+      el("li", { class: h.debtOk ? "ask" : "miss", text: h.debtOk ? `Monthly debts are ${h.debtShare.toFixed(1)}% of gross income. Habitat's homebuyer guide says under 10%; the qualifications page does not list it, so confirm at orientation.` : `Monthly debts are ${h.debtShare.toFixed(1)}% of gross income. Habitat's homebuyer guide says under 10%, about ${money(h.debtLimit)} a month. Confirm at orientation.` }),
       h.hours ? el("li", { class: "met", text: `Sweat equity for this income group: ${h.hours} hours per adult on a new home, ${h.resaleHours} on a resale.` }) : null);
     const steps = [];
     if (!h.debtOk) steps.push(`Pay monthly debts down below ${money(h.debtLimit)}. It is the first thing Habitat checks.`);
@@ -109,7 +110,7 @@ function readySection() {
     steps.push("Attend a free orientation: Habitat OC runs them online in English, Spanish and Vietnamese.");
     steps.push("Take a HUD-approved homebuyer class. Most programs require it.");
     steps.push("Gather 2 years of tax returns, recent pay stubs and 2 months of bank statements.");
-    steps.push("Pull your credit reports and fix errors before you apply.");
+    steps.push("Pull your credit reports and fix errors before you apply. Free help in OC: SparkPoint OC, Orange County United Way, (714) 278-4679; Operation HOPE, (657) 208-5873.");
     next.replaceChildren(...steps.map((t) => el("li", { text: t })));
   });
   return section("ready", "1. Ready", "Is this family ready, and what is the gap?", "An early check for a family or the counselor sitting with them. Answers stay on this device. Use made-up numbers in a demo.",
@@ -118,12 +119,13 @@ function readySection() {
         numberField("People in the household", () => R.size, (v) => { R.size = Math.round(v); }, { min: 1, max: 8, step: 1 }),
         numberField("Household income a year, before tax", () => R.income, (v) => { R.income = v; }, { min: 0, max: 1000000, step: 1000, prefix: "$" }),
         numberField("Monthly debt payments", () => R.debts, (v) => { R.debts = v; }, { min: 0, max: 50000, step: 50, prefix: "$", note: "Car, cards, student loans. Not rent." }),
+        numberField("Rent and utilities a month", () => R.rent, (v) => { R.rent = v; }, { min: 0, max: 20000, step: 50, prefix: "$", note: "Habitat counts housing costs over 30% of gross income as a need." }),
         el("div", { class: "field" }, el("label", { for: cityId }, "City where they want to buy"), city),
         el("div", { class: "field" }, el("label", { for: "ready-res" }, "Residency"), res),
         first),
       el("div", {}, group.node, alone.node, helped.node)),
     el("h3", { text: "Programs" }), list,
-    el("h3", { text: "Habitat for Humanity of Orange County" }), habitat, el("p", { class: "note" }, "Habitat sets each price from income and helps families with homes it builds or buys. ", src("habitat")),
+    el("h3", { text: "Habitat for Humanity of Orange County" }), habitat, el("p", { class: "note" }, "Three criteria from Habitat: need for improved housing, a steady source of income, and willingness to partner (sweat equity). Questions: Habitat OC Home Ownership, (714) 434-6200 ext. 227. ", src("habitat")),
     el("h3", { text: "Next steps" }), next);
 }
 
