@@ -1,6 +1,6 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
-import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside } from "./gap.js";
+import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside, aduSpeed } from "./gap.js";
 import { pdfText } from "./pdftext.js";
 import { analyze, buildProfile, TYPE_LABEL } from "./doccheck.js";
 
@@ -41,6 +41,7 @@ const S = {
   donate: { cause: "home", amount: 250, custom: "", freq: "monthly", match: false },
   equity: { price: 700000, equityPct: 20, downPct: 5, years: 10, growthPct: 3 },
   aside: { homes: 200, setAsidePct: 10, discountPct: 30, marketPrice: 1000000 },
+  adu: { requests: 300, currentDays: 120, targetDays: 30, rent: 2700 },
   levers: { landPct: 0, feePct: 0 },
   build: { homes: 6, adults: 2, hours: 250, perDay: 8 },
 };
@@ -734,6 +735,52 @@ function proposalsSection() {
       el("p", { class: "note", text: "Set-aside rules must leave projects able to pencil, or builders stop building. A city usually pairs them with density bonuses, faster permits or fee cuts." })));
 }
 
+
+// TOGETHER: a city tech day (hackathon) with one target: approve a standard ADU in 30 days or less.
+function aduSection() {
+  const A = S.adu;
+  const stats = el("div", { class: "stats4" });
+  const say = el("p", { class: "answer small", role: "status" });
+  const st = (label, value, note) => el("div", { class: "stat" }, el("span", { class: "lab", text: label }), el("strong", { class: "big", text: value }), el("span", { class: "sub", text: note }));
+  subs.push(() => {
+    const r = aduSpeed(A);
+    stats.replaceChildren(
+      st("Days saved per permit", String(Math.round(r.daysSaved)), `${A.currentDays} days now, target ${Math.min(A.currentDays, A.targetDays)}`),
+      st("Home-years gained", r.homeYears.toFixed(0), `${A.requests} ADU requests a year`),
+      st("Rent or housing value", money(r.rentValue), `At ${money(A.rent)} a month (ASSUMPTION)`),
+      st("State deadline", "60 days", r.overLaw ? "Your current time is over the legal limit" : "Current time is within the limit"));
+    say.textContent = `Cutting review from ${A.currentDays} to ${Math.min(A.currentDays, A.targetDays)} days puts about ${r.homeYears.toFixed(0)} extra years of homes on the market every year, without one new dollar of subsidy.`;
+  });
+  const n = (label, get, put, o) => numberField(label, get, put, o);
+  const challenges = [
+    ["Pre-check before submit", "A tool that reads the ADU plans and lists what is missing against the city's own checklist, so the first review is the last one."],
+    ["Parcel fit in one minute", "Type an address and see setbacks, height, lot coverage and the ADU size the lot allows, from the city's public GIS layers."],
+    ["Pick a pre-approved plan", "A gallery of plans the city already approved; pick one and the review is mostly done."],
+    ["Live permit tracker", "Every application shows which desk it is on and for how many days, like a package tracker."],
+    ["Plain-language corrections", "Turn reviewer comments into clear fix lists in English, Spanish and Vietnamese."],
+  ];
+  return section("adu", "Together: tech for the city", "City tech day: approve an ADU in 30 days", "Cities can host a community hackathon with students, builders, architects and city staff in one room. One target: a standard backyard home (ADU) approved in 30 days or less, and 15 days with a pre-approved plan. Nothing is built for the city without its staff in the room, and no personal data is used: public rules, public maps, sample plans.",
+    el("article", { class: "proposal" },
+      el("h3", { text: "The target" }),
+      el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "Step" }), el("th", { text: "Days" }), el("th", { text: "Status" }))),
+        el("tbody", {},
+          el("tr", {}, el("td", { text: "California law: decide a complete ADU application within 60 days (Gov. Code 66317)" }), el("td", { text: "60" }), el("td", {}, tag("verified"))),
+          el("tr", {}, el("td", { text: "Tech day goal for a standard ADU" }), el("td", { text: "30" }), el("td", {}, tag("assumption"))),
+          el("tr", {}, el("td", { text: "Pre-approved plan (cities must offer a pre-approved plan program, AB 1332, from 2025)" }), el("td", { text: "15" }), el("td", {}, tag("assumption"))))),
+      el("div", { class: "grid" },
+        el("div", {},
+          n("ADU requests a year", () => A.requests, (v) => { A.requests = Math.round(v); }, { min: 10, max: 5000, step: 10 }),
+          n("Days to approve now", () => A.currentDays, (v) => { A.currentDays = Math.round(v); }, { min: 1, max: 365, step: 5, status: "assumption" }),
+          n("Target days", () => A.targetDays, (v) => { A.targetDays = Math.round(v); }, { min: 1, max: 120, step: 5 }),
+          n("Monthly rent of an ADU", () => A.rent, (v) => { A.rent = v; }, { min: 500, max: 6000, step: 50, prefix: "$" })),
+        el("div", {}, stats)),
+      say),
+    el("article", { class: "proposal" },
+      el("h3", { text: "Five challenges for the hackathon" }),
+      el("div", { class: "ideas" }, challenges.map(([t, d]) => el("div", { class: "idea" }, el("h3", { text: t }), el("p", { text: d })))),
+      el("p", { class: "note", text: "Format: one Saturday, city planning staff as judges, UCI and community college students, local builders and architects. Winning tools are handed to the city as open source (MIT) so any Orange County city can use them. We do not know each city's current ADU review time; the city enters its own number." })));
+}
+
 function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
@@ -755,7 +802,7 @@ function intro() {
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
-  panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), ideasSection(), familySection(), stackSection(), rateSection()),
+  panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);

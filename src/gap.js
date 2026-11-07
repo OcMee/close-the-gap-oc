@@ -272,3 +272,13 @@ export function setAside({ homes, setAsidePct = 10, discountPct = 30, marketPric
   const pay = (x) => x * (1 - d) * f;
   return { count, price, discountEach: m * k, valueToFamilies: m * k * count, monthlyMarket: pay(m), monthlyDiscounted: pay(price), resaleRule: `${Math.round(k * 100)}% below market value, every time it sells` };
 }
+
+// TOGETHER: civic tech day. Faster ADU permit review means homes rented or lived in sooner.
+export function aduSpeed({ requests = 300, currentDays = 120, targetDays = 30, rent = 2700 }) {
+  const n = Math.round(pos(requests));
+  const now = pos(currentDays);
+  const goal = Math.min(now, pos(targetDays));
+  const daysSaved = now - goal;
+  const homeYears = (n * daysSaved) / 365;
+  return { daysSaved, homeYears, rentValue: homeYears * 12 * pos(rent), legalMaxDays: 60, overLaw: now > 60, meetsLaw: goal <= 60 };
+}
