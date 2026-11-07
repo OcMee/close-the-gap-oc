@@ -210,6 +210,7 @@ function readySection() {
   const lift = el("div", { class: "lift", role: "img" });
   const liftKey = el("ul", { class: "lift-key" });
   const liftSay = el("p", { class: "lift-say" });
+  const liftBig = el("strong", { class: "lift-big" });
   const habitat = el("ul", { class: "checks" });
   const next = el("ol", { class: "plain" });
   const cityId = "ready-city";
@@ -235,8 +236,11 @@ function readySection() {
     lift.replaceChildren(
       el("span", { class: "lift-base", title: `On income: ${money(r.alone)}` }, el("b", { text: money(r.alone) })),
       ...parts.map((l, k) => el("span", { class: `lift-help h${k % 3}`, title: `${l.program.name}: +${money((up * l.amount) / sum)}` })));
-    lift.firstChild.style.width = `${(r.alone / total) * 100}%`;
-    parts.forEach((l, k) => { lift.children[k + 1].style.width = `${((up * l.amount) / sum / total) * 100}%`; });
+    const shares = parts.map((l) => Math.max(6, ((up * l.amount) / sum / total) * 100));
+    const helpPct = shares.reduce((s, x) => s + x, 0);
+    lift.firstChild.style.width = `${100 - helpPct}%`;
+    parts.forEach((l, k) => { lift.children[k + 1].style.width = `${shares[k]}%`; });
+    liftBig.textContent = up > 0 ? `+${money(up)}` : "$0";
     lift.setAttribute("aria-label", `On income ${money(r.alone)}, plus ${money(up)} from help, total ${money(r.helped.price)}`);
     liftKey.replaceChildren(
       el("li", {}, el("span", { class: "sw base" }), `On income ${money(r.alone)}`),
@@ -276,7 +280,7 @@ function readySection() {
         el("div", { class: "field" }, el("label", { for: cityId }, "City where they want to buy"), city),
         el("div", { class: "field" }, el("label", { for: "ready-res" }, "Residency"), res),
         first),
-      el("div", {}, group.node, alone.node, helped.node, el("div", { class: "lift-box" }, el("span", { class: "lab", text: "What the help adds" }), lift, liftKey, liftSay))),
+      el("div", {}, group.node, alone.node, helped.node, el("div", { class: "lift-box" }, el("span", { class: "lab", text: "What the help adds" }), liftBig, lift, liftKey, liftSay))),
     programAtlas(),
     el("h3", { text: "Programs" }), list,
     el("h3", { text: "Habitat for Humanity of Orange County" }), habitat, el("p", { class: "note" }, "Three criteria from Habitat: need for improved housing, a steady source of income, and willingness to partner (sweat equity). Questions: Habitat OC Home Ownership, (714) 434-6200 ext. 227. ", src("habitat")),
