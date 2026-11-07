@@ -1207,7 +1207,7 @@ function mapSection() {
 const DECK = [
   "The Affordable Home Initiative", "10 years in the UK: 3 homes bought", "3 years in the US: 3 escrows opened, 0 closed",
   "What OCMEED stands for", "California already has Help to Buy", "One affordable home, one gap",
-  "The friend at the party, for every family", "The 90-second demo", "What is real, and what is mocked", "Let's build that path here",
+  "The friend at the party, for every family", "The 90-second demo", "Let's build that path here",
 ];
 function demoSection() {
   let i = 0;
@@ -1230,7 +1230,7 @@ function demoSection() {
   const box = el("div", { class: "deck", tabindex: "0", "aria-label": "Pitch deck. Use the left and right arrow keys to move between slides." }, stage);
   box.addEventListener("keydown", (e) => { if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1); } if (e.key === "ArrowLeft") { e.preventDefault(); go(i - 1); } });
   go(0);
-  return section("demo", "Demo", "The pitch, slide by slide", "Our ten-slide pitch from the Claude Impact Lab at UC Irvine, 7 November 2026. Slide 8 is the 90-second demo video.",
+  return section("demo", "Demo", "The pitch, slide by slide", "Our nine-slide pitch from the Claude Impact Lab at UC Irvine, 7 November 2026. Slide 8 is the 90-second demo video.",
     box,
     el("div", { class: "deck-bar" },
       el("button", { type: "button", class: "ghost story-arrow", "aria-label": "Previous slide", onclick: () => go(i - 1) }, "\u2190"),
