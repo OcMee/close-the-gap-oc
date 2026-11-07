@@ -793,10 +793,43 @@ const STORY = [
   ["home", "A front door", "Keys, at a price the family can carry for 30 years."],
 ];
 function storyStrip() {
+  const strip = el("div", { class: "story", tabindex: "0", "aria-label": `Story, ${STORY.length} scenes` }, STORY.map(([img, title, text], i) => el("figure", { class: "frame" },
+    el("img", { src: `img/${img}.jpg`, alt: title, width: 1200, height: 674, loading: i < 2 ? "eager" : "lazy" }),
+    el("figcaption", {}, el("span", { class: "n", text: String(i + 1) }), el("b", { text: title }), el("span", { text: text })))));
+  // Rotate one scene at a time so it is clear there are more than four. Pauses on hover, focus or touch; a button stops it.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let playing = !reduce, hold = false, visible = false;
+  const count = el("span", { class: "story-count", "aria-live": "off" });
+  const dots = el("div", { class: "story-dots" }, STORY.map((x, i) => el("button", { type: "button", "aria-label": `Scene ${i + 1}: ${x[1]}`, onclick: () => go(i) })));
+  const playBtn = el("button", { type: "button", class: "ghost story-play" });
+  const card = () => (strip.firstChild ? strip.firstChild.getBoundingClientRect().width + 16 : 300);
+  const first = () => Math.round(strip.scrollLeft / card());
+  const perView = () => Math.max(1, Math.round(strip.clientWidth / card()));
+  const update = () => {
+    const i = first(), n = perView();
+    count.textContent = `${i + 1} to ${Math.min(STORY.length, i + n)} of ${STORY.length}`;
+    [...dots.children].forEach((d, k) => d.setAttribute("aria-current", k >= i && k < i + n ? "true" : "false"));
+    playBtn.textContent = playing ? "Pause" : "Play";
+    playBtn.setAttribute("aria-pressed", playing ? "false" : "true");
+  };
+  const go = (i) => {
+    const last = STORY.length - perView();
+    const target = i > last ? 0 : i < 0 ? last : i;
+    strip.scrollTo({ left: target * card(), behavior: reduce ? "auto" : "smooth" });
+  };
+  playBtn.addEventListener("click", () => { playing = !playing; update(); });
+  for (const [ev, v] of [["mouseenter", true], ["mouseleave", false], ["focusin", true], ["focusout", false], ["pointerdown", true]]) strip.addEventListener(ev, () => { hold = v; });
+  strip.addEventListener("scroll", () => requestAnimationFrame(update), { passive: true });
+  if ("IntersectionObserver" in window) new IntersectionObserver((es) => { visible = es.some((x) => x.isIntersecting); }).observe(strip);
+  setInterval(() => { if (playing && !hold && visible && !document.hidden) go(first() + 1); }, 3500);
+  requestAnimationFrame(update);
   return section("story", "Together: one home, start to finish", "From an empty lot to a front door", "Illustrations of how a community closes the gap together. Made-up scenes, not real people.",
-    el("div", { class: "story" }, STORY.map(([img, title, text], i) => el("figure", { class: "frame" },
-      el("img", { src: `img/${img}.jpg`, alt: title, width: 1200, height: 674, loading: i < 2 ? "eager" : "lazy" }),
-      el("figcaption", {}, el("span", { class: "n", text: String(i + 1) }), el("b", { text: title }), el("span", { text: text }))))));
+    el("div", { class: "story-wrap" }, strip),
+    el("div", { class: "story-bar" },
+      el("button", { type: "button", class: "ghost story-arrow", "aria-label": "Previous scene", onclick: () => go(first() - 1) }, "\u2190"),
+      dots,
+      el("button", { type: "button", class: "ghost story-arrow", "aria-label": "Next scene", onclick: () => go(first() + 1) }, "\u2192"),
+      count, playBtn));
 }
 
 // GIVE: events that bring the county together.
