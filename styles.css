@@ -429,3 +429,6 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .car-side h3 { margin: 0 0 8px; color: #fff; }
 .car-side p { color: #e6e6e6; }
 @media (max-width: 860px) { .car { grid-template-columns: 1fr; } }
+
+/* Header chapters: text only */
+#tabs button { padding: 6px 16px; min-height: 48px; }
