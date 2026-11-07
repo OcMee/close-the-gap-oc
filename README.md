@@ -1,4 +1,6 @@
-# The Affordable Home OCMEE
+# The Affordable Home Initiative, by OCMEE Design
+
+**OCMEED:** Orange County Mortgage, Equity and Education, by Design.
 
 > For a nonprofit finance lead, city housing analyst or donor: shows whether one affordable Orange County home pencils, which help stacks, and what is still missing, with every number sourced or labelled ASSUMPTION.
 
@@ -45,7 +47,7 @@ Example, all defaults (3-bed home, lower-income family of 4, 7.18%): the family 
 
 ## Try it
 
-No install needed. Any modern browser.
+No install needed. Any modern browser. Fonts: Montserrat under the SIL Open Font License (see `fonts/README.md`).
 
 ```bash
 git clone https://github.com/OcMee/close-the-gap-oc.git
