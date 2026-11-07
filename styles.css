@@ -382,3 +382,38 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 /* Dials under number boxes */
 .field .dial { display: block; width: 100%; max-width: 300px; height: 28px; margin: 6px 0 0; accent-color: var(--orange); cursor: pointer; }
 .field .dial:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; border-radius: 4px; }
+
+/* Help lift bar: grey = on income, orange = what the help adds */
+.lift-box { padding: 16px 0; }
+.lift-box .lab { display: block; color: var(--muted); font-size: 14px; margin-bottom: 8px; }
+.lift { display: flex; height: 48px; border-radius: 10px; overflow: hidden; background: #ecece8; }
+.lift > span { display: flex; align-items: center; min-width: 0; transition: width .35s ease-out; }
+.lift-base { background: #3a3a3a; color: #fff; padding: 0 12px; white-space: nowrap; }
+.lift-base b { font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+.lift-help.h0, .sw.h0 { background: var(--orange); }
+.lift-help.h1, .sw.h1 { background: #ffb366; }
+.lift-help.h2, .sw.h2 { background: #fbad23; }
+.lift-help + .lift-help { border-left: 2px solid #fff; }
+.lift-key { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; font-size: 14px; }
+.lift-key li { display: flex; align-items: center; gap: 8px; }
+.sw { width: 14px; height: 14px; border-radius: 4px; flex: none; }
+.sw.base { background: #3a3a3a; }
+.lift-say { margin: 10px 0 0; font-size: 15px; }
+.lift-say b { color: #1a1a1a; }
+@media (prefers-reduced-motion: reduce) { .lift > span { transition: none; } }
+
+/* Rotating story strip */
+.story-wrap { position: relative; }
+.story-wrap::after { content: ""; position: absolute; top: 16px; right: 0; bottom: 12px; width: 56px; pointer-events: none; background: linear-gradient(90deg, rgba(255,255,255,0), #fff); }
+.story { scrollbar-width: none; }
+.story::-webkit-scrollbar { display: none; }
+.story:focus-visible { outline: 3px solid var(--orange); outline-offset: 4px; border-radius: 12px; }
+.story-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 8px; }
+.story-arrow { min-width: 44px; min-height: 44px; font-size: 18px; font-weight: 800; }
+.story-dots { display: flex; gap: 6px; }
+.story-dots button { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 6px; background: #d4d4cf; cursor: pointer; transition: width .3s, background .3s; }
+.story-dots button[aria-current="true"] { width: 24px; background: var(--orange); }
+.story-dots button:focus-visible { outline: 3px solid #1a1a1a; outline-offset: 2px; }
+.story-count { font-size: 14px; font-weight: 700; color: var(--muted); }
+.story-play { margin-left: auto; min-height: 40px; }
+@media (prefers-reduced-motion: reduce) { .story-dots button { transition: none; } }
