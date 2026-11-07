@@ -1,0 +1,10 @@
+{
+  "name": "close-the-gap-oc",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Gap calculator for one affordable Orange County home. No dependencies.",
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test tests/gap.test.mjs" },
+  "license": "MIT"
+}
