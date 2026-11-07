@@ -332,3 +332,6 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .slip:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
 @media (max-width: 900px) { .intro-top { grid-template-columns: 1fr; } .slip { height: 88px; } }
 @media (prefers-reduced-motion: reduce) { .slip, .slip img { transition: none; } .slip:hover { transform: none; } }
+
+/* GOD letters on the slips */
+.slip-n { font-size: 30px; width: 56px; height: 56px; }
