@@ -1,0 +1,45 @@
+# theahome.ocmeed.com only (The Affordable Home Initiative). Never place in the ocmeed.com docroot.
+Options -Indexes -MultiViews
+DirectoryIndex index.html
+
+AddType text/javascript .js
+AddType text/css .css
+AddType image/svg+xml .svg
+AddType font/woff .woff
+
+RewriteEngine On
+
+# Keep cPanel AutoSSL validation working
+RewriteRule ^(?:\.well-known/|[0-9]+\..+\.cpaneldcv$) - [L]
+
+# Canonical host only, static methods only
+RewriteCond %{HTTP_HOST} !^theahome\.ocmeed\.com(?::[0-9]+)?$ [NC]
+RewriteRule ^ - [F,L]
+RewriteCond %{REQUEST_METHOD} !^(?:GET|HEAD)$
+RewriteRule ^ - [F,L]
+
+# HTTPS, with a fixed host so there is no open redirect
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://theahome.ocmeed.com%{REQUEST_URI} [R=301,L]
+
+# Default deny: only the published files
+RewriteRule !^(?:index\.html|robots\.txt|favicon\.svg|styles\.css|src/[a-z]+\.js|fonts/m[0-9]+\.woff|img/[a-z-]+\.jpg)?$ - [F,L]
+
+# No includeSubDomains or preload: this is a subdomain
+Header always set Strict-Transport-Security "max-age=31536000"
+Header always set Content-Security-Policy "default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self'; connect-src 'none'; worker-src 'none'; manifest-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; require-trusted-types-for 'script'; trusted-types 'none'; upgrade-insecure-requests"
+Header always set X-Frame-Options "DENY"
+Header always set X-Content-Type-Options "nosniff"
+Header always set Referrer-Policy "no-referrer"
+Header always set Permissions-Policy "accelerometer=(), browsing-topics=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), serial=(), usb=(), xr-spatial-tracking=()"
+Header always set Cross-Origin-Opener-Policy "same-origin"
+Header always set Cross-Origin-Resource-Policy "same-origin"
+Header always set X-Robots-Tag "noindex, nofollow"
+
+# File names have no hashes, so revalidate to keep the modules in step
+<FilesMatch "\.(?:html|js|css)$">
+  Header set Cache-Control "no-cache"
+</FilesMatch>
+<FilesMatch "\.(?:svg|woff|jpg)$">
+  Header set Cache-Control "public, max-age=604800"
+</FilesMatch>

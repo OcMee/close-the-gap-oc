@@ -20,7 +20,7 @@ A finance lead at a small housing nonprofit (made-up for this demo) has a home t
 
 A static web page in three tabs, no server, no accounts, no data leaves the browser.
 
-**1. Ready (a family, or the counselor with them).** Six short lessons on how buying works, what lenders look at and what can break a deal. A check of household size, income, debts, rent, city, residency and first-time status: the income group from HCD's 2026 table, which programs may fit and why, the price they could pay with and without deferred help, a Habitat for Humanity of OC check against its published criteria, and next steps. Then "How a lender sees this family": personal tips on debt-to-income, credit score tiers, cash needed and steady income, each with a number to aim for.
+**1. Ready (a family, or the counselor with them).** Six short lessons on how buying works, what lenders look at and what can break a deal. A check of household size, income, debts, rent, city, residency and first-time status: the income group from HCD's 2026 table, which programs may fit and why, the price they could pay with and without deferred help, a Habitat for Humanity of OC check against its published criteria, and next steps. A document check: a counselor drops in PDF pay stubs, a bank statement, a Loan Estimate or notices; the tool reads them on the device (nothing is uploaded), fills the family profile, and flags hidden debt, unexplained deposits, payments that leave out HOA dues, adjustable-rate worst cases and bills escrow will not pay. Tested on the event's fictional Herrera pack: it catches all five scored items. A mortgage atlas of 12 loan types with a fit check. Then "How a lender sees this family": personal tips on debt-to-income, credit score tiers, cash needed and steady income, each with a number to aim for.
 
 **2. Together (a nonprofit or city).**
 
@@ -30,7 +30,9 @@ A static web page in three tabs, no server, no accounts, no data leaves the brow
    Program ideas a city or nonprofit can start, each with the lever it pulls, a checked Orange County example or a note that none was verified, and a first step.
 4. **The stack:** buyer programs (CalHFA MyHome, Santa Ana, Garden Grove, Anaheim, County MAP, Dream For All) checked against city and income, each card saying how much it would close. Project funds marked confirmed or unconfirmed.
 5. **Rates:** the gap at 5% to 9%, and what the move from 7.40% (8 Oct) to 7.18% (5 Nov) did.
-**3. Give (donors, businesses and pillars of the community).** What a gift pays for, line by line, share of the gap and homes closed per $1 million. Ways to give time, professional skills, materials and money, and a pledge planner that shows what a pledge does. Honest tax notes, and giving kept apart from investing.
+Together opens with an illustrated story, from an empty lot to a front door.
+
+**3. Give (donors, businesses and pillars of the community).** Six events that bring the county together: City Day, Orange County Community Build Day, a leaders and donors gala, lunch and learn, pro bono day, council housing night. What a gift pays for, line by line, share of the gap and homes closed per $1 million. Ways to give time, professional skills, materials and money, and a pledge planner that shows what a pledge does. Honest tax notes, and giving kept apart from investing.
 
 **Sources and assumptions,** under every tab: every source with its status and date.
 
@@ -99,6 +101,8 @@ Every number we made up is labelled ASSUMPTION here and in the tool.
 | Whether programs combine | Not modelled. Shown as a question to ask |
 | County MAP city list | Partly: 5 of the 14 cities plus unincorporated areas |
 | Spanish and Vietnamese | Not built |
+| Document check | Working on text PDFs; photos of documents need text recognition (not built) |
+| Illustrations | Generated images of made-up scenes, not real people or events |
 
 ## Where it gets things wrong
 
