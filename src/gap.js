@@ -282,3 +282,16 @@ export function aduSpeed({ requests = 300, currentDays = 120, targetDays = 30, r
   const homeYears = (n * daysSaved) / 365;
   return { daysSaved, homeYears, rentValue: homeYears * 12 * pos(rent), legalMaxDays: 60, overLaw: now > 60, meetsLaw: goal <= 60 };
 }
+
+// TOGETHER: one project's gap per home, the same formula as the calculator.
+// What the family can pay (by income group and bedrooms) against the cost to deliver, less confirmed funds.
+export function projectGap({ costPerHome, tier, bedrooms, fundsPerHome = 0, ratePct, assume = {} }) {
+  const { monthly } = affordableCost(tier, bedrooms);
+  const price = affordablePrice({ ...assume, monthly, ratePct, aid: 0 });
+  const cost = pos(costPerHome);
+  const gapBefore = Math.max(0, cost - price);
+  const open = Math.max(0, gapBefore - pos(fundsPerHome));
+  const openPct = gapBefore > 0 ? (open / gapBefore) * 100 : 0;
+  const status = open <= 0 ? "funded" : openPct < 25 ? "under25" : "over25";
+  return { price, gapBefore, open, openPct, status };
+}

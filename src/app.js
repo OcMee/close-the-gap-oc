@@ -1,6 +1,6 @@
 // Page code. All text goes in through textContent, so nothing typed can become markup.
 import { SOURCES, ASSUME, DEAL, BUYER_AID, PROJECT_FUNDS, TIERS, RATE, CITIES, CHECKED, LESSONS, LENDER, IDEAS, GIVE_WAYS, MORTGAGES } from "./data.js";
-import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside, aduSpeed } from "./gap.js";
+import { closeTheGap, rateCurve, giftView, tableFor, readyCheck, applyLevers, buildDays, lenderReady, pledgeView, mortgageFit, sharedEquity, setAside, aduSpeed, projectGap } from "./gap.js";
 import { pdfText } from "./pdftext.js";
 import { docxText } from "./docx.js";
 import { LANGS, I18N } from "./lang.js";
@@ -1113,6 +1113,94 @@ const CHAPTERS = [
   { id: "give", n: 3, letter: "D", verb: "", word: "Donate.", who: "You", whoLong: "For the neighbor and the business", img: "img/gala.jpg", alt: "Guests at a community gala",
     line: "Time, skills, goods and money, each one tied to a real gap. Demo only: nothing is charged." },
 ];
+// TOGETHER: projects on the map. Sample sites where a city, church or nonprofit could build new
+// affordable homes. Fictional numbers; each gap uses the same formula as the calculator.
+const SITES = [
+  { id: "sa", city: "Santa Ana", site: "Church parking lot", homes: 12, tier: "lower", bedrooms: 3, cost: 520000, funds: 180000, lon: -117.867, lat: 33.745 },
+  { id: "an", city: "Anaheim", site: "Surplus city land", homes: 24, tier: "moderate", bedrooms: 3, cost: 610000, funds: 20000, lon: -117.914, lat: 33.836 },
+  { id: "gg", city: "Garden Grove", site: "Former office park", homes: 16, tier: "lower", bedrooms: 2, cost: 480000, funds: 220000, lon: -117.941, lat: 33.774 },
+  { id: "fu", city: "Fullerton", site: "Next to the train station", homes: 30, tier: "moderate", bedrooms: 2, cost: 560000, funds: 0, lon: -117.925, lat: 33.870 },
+  { id: "ir", city: "Irvine", site: "Builder set-aside, new village", homes: 20, tier: "moderate", bedrooms: 3, cost: 700000, funds: 60000, lon: -117.794, lat: 33.684 },
+  { id: "cm", city: "Costa Mesa", site: "Small infill lot", homes: 6, tier: "lower", bedrooms: 3, cost: 540000, funds: 180000, lon: -117.919, lat: 33.641 },
+  { id: "we", city: "Westminster", site: "Closed school site", homes: 18, tier: "lower", bedrooms: 3, cost: 500000, funds: 160000, lon: -117.994, lat: 33.759 },
+  { id: "tu", city: "Tustin", site: "Former base land", homes: 28, tier: "moderate", bedrooms: 3, cost: 590000, funds: 50000, lon: -117.826, lat: 33.746 },
+  { id: "sj", city: "San Juan Capistrano", site: "Church land", homes: 8, tier: "lower", bedrooms: 2, cost: 620000, funds: 300000, lon: -117.662, lat: 33.502 },
+];
+// Simplified county outline (lon, lat), clockwise from Seal Beach. Illustration, not a survey.
+const OC_SHAPE = [[-118.115, 33.745], [-118.09, 33.78], [-118.03, 33.84], [-117.98, 33.90], [-117.88, 33.94], [-117.78, 33.95], [-117.67, 33.88], [-117.60, 33.82], [-117.53, 33.74], [-117.46, 33.68], [-117.41, 33.64], [-117.47, 33.55], [-117.51, 33.50], [-117.60, 33.39], [-117.65, 33.43], [-117.69, 33.46], [-117.75, 33.50], [-117.79, 33.55], [-117.85, 33.59], [-117.89, 33.60], [-117.94, 33.62], [-118.00, 33.66], [-118.06, 33.71], [-118.115, 33.745]];
+function mapSection() {
+  const W = 700, H = 690;
+  const px = (lon) => ((lon + 118.16) / 0.80) * W;
+  const py = (lat) => ((33.97 - lat) / 0.62) * H;
+  const NS = "http://www.w3.org/2000/svg";
+  const sv = (tag, at = {}, ...kids) => { const n = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(at)) n.setAttribute(k, v); for (const k of kids) if (k) n.append(k); return n; };
+  const svg = sv("svg", { viewBox: `0 0 ${W} ${H}`, class: "pm-svg", role: "group", "aria-label": "Map of sample project sites in Orange County" });
+  const detail = el("div", { class: "pm-detail", role: "status", "aria-live": "polite" });
+  const rows = el("tbody", {});
+  const totals = el("p", { class: "answer small" });
+  const tierSel = el("select", { id: "pm-tier", onchange: () => draw() },
+    el("option", { value: "all", text: "All income groups" }), el("option", { value: "lower", text: "Lower income" }), el("option", { value: "moderate", text: "Moderate income" }));
+  const COLOR = { funded: "#2f7d4f", under25: "#b8860b", over25: "#c0392b" };
+  const LABEL = { funded: "Fully funded", under25: "Under 25% still open", over25: "25% or more still open" };
+  let picked = "sa";
+  const calc = (s) => ({ ...s, ...projectGap({ costPerHome: s.cost, tier: s.tier, bedrooms: s.bedrooms, fundsPerHome: s.funds, ratePct: S.rate, assume: S.assume }) });
+  const show = (r) => {
+    picked = r.id;
+    const total = r.open * r.homes;
+    detail.replaceChildren(
+      el("p", { class: "lab", text: `${r.city} \u00b7 ${r.site}` }),
+      el("h3", { text: `${r.homes} homes, ${r.bedrooms} bedrooms, ${r.tier === "lower" ? "lower" : "moderate"} income` }),
+      el("dl", { class: "pm-dl" },
+        el("dt", { text: "Cost to deliver, per home" }), el("dd", { text: money(r.cost) }),
+        el("dt", { text: "What the family can pay" }), el("dd", { text: money(r.price) }),
+        el("dt", { text: "Confirmed funds, per home" }), el("dd", { text: money(r.funds) }),
+        el("dt", { text: "Still open, per home" }), el("dd", { class: `pm-open s-${r.status}`, text: r.open > 0 ? money(r.open) : "$0" })),
+      el("p", { class: "pm-total" }, r.open > 0 ? el("b", { text: `${money(total)} closes this project.` }) : el("b", { text: "This project is fully funded." }),
+        r.open > 0 ? ` That is ${Math.ceil(total / 25000)} gifts of $25,000, or ${Math.ceil(r.open / 25000) > 1 ? Math.ceil(r.open / 25000) + " gifts" : "one gift"} per home.` : " Ready for families from the Ready check."),
+      el("p", { class: "note", text: "Sample site and fictional numbers (ASSUMPTION). The family's price uses the calculator's income table and today's rate." }));
+    [...svg.querySelectorAll(".pm-pin")].forEach((g) => g.setAttribute("aria-pressed", g.dataset.id === r.id ? "true" : "false"));
+    [...rows.children].forEach((tr) => tr.classList.toggle("on", tr.dataset.id === r.id));
+  };
+  const draw = () => {
+    const list = SITES.map(calc).filter((r) => tierSel.value === "all" || r.tier === tierSel.value);
+    const ocean = sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#dfeaf1" });
+    const land = sv("rect", { x: 0, y: 0, width: W, height: H, fill: "#f4efe6" });
+    const coastClip = sv("clipPath", { id: "pm-coast" }, sv("polygon", { points: `0,0 ${W},0 ${W},${py(33.40)} ${px(-117.60)},${py(33.39)} ${OC_SHAPE.slice(13).map(([x, y]) => `${px(x)},${py(y)}`).join(" ")} 0,${py(33.70)}` }));
+    const county = sv("polygon", { points: OC_SHAPE.map(([x, y]) => `${px(x)},${py(y)}`).join(" "), fill: "#fff8ee", stroke: "#ff8710", "stroke-width": 3, "stroke-linejoin": "round" });
+    const labels = [["Los Angeles Co.", -118.03, 33.945], ["San Bernardino Co.", -117.66, 33.94], ["Riverside County", -117.52, 33.84], ["Pacific Ocean", -118.05, 33.55], ["Orange County", -117.72, 33.60]].map(([t, lo, la]) => { const n = sv("text", { x: px(lo), y: py(la), class: t === "Orange County" ? "pm-county" : "pm-region" }); n.textContent = t; return n; });
+    const pins = list.map((r) => {
+      const rad = 8 + Math.sqrt(r.homes) * 2.2;
+      const g = sv("g", { class: "pm-pin", "data-id": r.id, tabindex: 0, role: "button", "aria-label": `${r.city}, ${r.site}: ${r.homes} homes, ${LABEL[r.status]}`, transform: `translate(${px(r.lon)} ${py(r.lat)})` },
+        sv("circle", { r: rad, fill: COLOR[r.status], stroke: "#fff", "stroke-width": 3 }));
+      const n = sv("text", { y: 6, class: "pm-n" }); n.textContent = String(r.homes); g.append(n);
+      const side = { we: [-1, 0], gg: [-1, -1], sa: [0, 1], cm: [-1, 0] }[r.id] || [1, 0];
+      const c = sv("text", { x: side[0] * (rad + 6), y: side[1] === 0 ? 5 : side[1] * (rad + 14) + (side[1] > 0 ? 4 : 0), "text-anchor": side[0] < 0 ? "end" : side[0] > 0 ? "start" : "middle", class: "pm-city" }); c.textContent = r.city; g.append(c);
+      g.addEventListener("click", () => show(r));
+      g.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(r); } });
+      return g;
+    });
+    svg.replaceChildren(sv("defs", {}, coastClip), ocean, sv("g", { "clip-path": "url(#pm-coast)" }, land), county, ...labels, ...pins);
+    rows.replaceChildren(...list.map((r) => el("tr", { "data-id": r.id, tabindex: 0, onclick: () => show(r), onkeydown: (e) => { if (e.key === "Enter") show(r); } },
+      el("td", {}, el("span", { class: `pm-dot s-${r.status}` }), r.city), el("td", { text: r.site }), el("td", { text: String(r.homes) }), el("td", { class: `pm-open s-${r.status}`, text: r.open > 0 ? money(r.open) : "Funded" }))));
+    const homes = list.reduce((s, r) => s + r.homes, 0);
+    const open = list.reduce((s, r) => s + r.open * r.homes, 0);
+    totals.textContent = `${list.length} sample sites, ${homes} homes. ${money(open)} still open after confirmed funds, about $${(open / 1000000).toFixed(1)} million to raise across the county.`;
+    const cur = list.find((r) => r.id === picked) || list[0];
+    if (cur) show(cur); else detail.replaceChildren(el("p", { text: "No sample site in this group." }));
+  };
+  subs.push(draw);
+  return section("projectmap", "2. Organize together: where to build", "Projects on the map: new homes on new kinds of land", "Church lots, surplus city land, closed schools, old office parks, land by the train. Each pin is a sample site where new affordable homes could go. Pin size is the number of homes; color is how much of each home's gap is still open after confirmed funds.",
+    el("div", { class: "pm-tools" }, el("label", { for: "pm-tier", class: "lab", text: "Show" }), tierSel,
+      el("span", { class: "pm-key" }, el("span", { class: "pm-dot s-funded" }), "Fully funded"),
+      el("span", { class: "pm-key" }, el("span", { class: "pm-dot s-under25" }), "Under 25% open"),
+      el("span", { class: "pm-key" }, el("span", { class: "pm-dot s-over25" }), "25% or more open"),
+      tag("assumption")),
+    totals,
+    el("div", { class: "pm" }, el("div", { class: "pm-map" }, svg, el("p", { class: "note", text: "Simplified outline, not to scale. Sample sites, not real projects." })),
+      el("div", { class: "pm-side" }, detail,
+        el("table", { class: "tbl pm-tbl" }, el("thead", {}, el("tr", {}, el("th", { text: "City" }), el("th", { text: "Site" }), el("th", { text: "Homes" }), el("th", { text: "Open per home" }))), rows))));
+}
+
 function intro() {
   const T = L();
   const base = [["OC", "Orange County"], ["M", "Mortgage"], ["E", "Education"], ["E", "Equity"], ["D", "Design"]];
@@ -1163,7 +1251,7 @@ const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", 
 introEl = intro();
 document.getElementById("main").append(introEl,
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
-  panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
+  panel("together", storyStrip(), hero(), homeSection(), leversSection(), mapSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
   panel("give", donateSection(), carSection(), volunteerSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 document.getElementById("tabs").before(langSwitch());
