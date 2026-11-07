@@ -171,3 +171,30 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 .more summary { color: #1a1a1a; }
 .chart .curve { stroke: var(--orange); }
 @media (max-width: 860px) { .letters li:first-child .l { min-width: 96px; height: 88px; font-size: 48px; } }
+
+/* Lessons, borrower tips, ideas, giving */
+.lessons { display: grid; gap: 8px; margin-top: 16px; }
+.lesson { border: 1px solid var(--hair); border-radius: 12px; background: #fff; padding: 4px 16px; }
+.lesson summary { min-height: 52px; display: flex; align-items: center; gap: 12px; cursor: pointer; font-weight: 700; font-size: 17px; }
+.lesson .n { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--orange); color: #1a1a1a; font-weight: 800; flex: none; }
+.lesson p { margin: 0 0 16px 44px; color: var(--muted); max-width: 72ch; }
+.tips { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 16px; }
+.tip { padding: 16px; border-radius: 12px; border: 1px solid var(--hair); background: #fff; border-top: 6px solid var(--line); }
+.tip .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.tip p { margin: 8px 0 0; font-size: 15px; color: var(--muted); }
+.tip.s-good { border-top-color: var(--good); } .tip.s-good .tag { color: var(--good); }
+.tip.s-work { border-top-color: var(--orange); } .tip.s-work .tag { color: #1a1a1a; background: #fff1e3; border-color: var(--orange); }
+.tip.s-bad { border-top-color: var(--bad); } .tip.s-bad .tag { color: var(--bad); }
+.tip.s-tip { border-top-color: #1a1a1a; }
+.ideas { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-top: 16px; }
+.idea { padding: 20px; border: 1px solid var(--hair); border-radius: 12px; background: #fff; display: flex; flex-direction: column; gap: 8px; }
+.idea .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.idea p { margin: 0; font-size: 15px; }
+.idea .first { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--hair); }
+.lever { flex: none; padding: 2px 10px; border-radius: 999px; background: var(--orange); color: #1a1a1a; font-size: 12px; font-weight: 800; }
+.ways { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 16px; }
+.way { padding: 20px; border-radius: 12px; background: #fff; border: 1px solid var(--hair); border-top: 6px solid var(--orange); }
+.way h3 { margin: 0 0 8px; }
+.way .plain { margin: 0; font-size: 15px; }
+@media (max-width: 860px) { .ways { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 480px) { .ways { grid-template-columns: 1fr; } }

@@ -20,16 +20,17 @@ A finance lead at a small housing nonprofit (made-up for this demo) has a home t
 
 A static web page in three tabs, no server, no accounts, no data leaves the browser.
 
-**1. Ready (a family, or the counselor with them).** Household size, income, debts, city, residency and first-time status. It returns the income group from HCD's 2026 table, which programs may fit and why, the price they could pay with and without deferred help, a Habitat for Humanity of OC check (income range, debts under 10%, sweat-equity hours) and next steps.
+**1. Ready (a family, or the counselor with them).** Six short lessons on how buying works, what lenders look at and what can break a deal. A check of household size, income, debts, rent, city, residency and first-time status: the income group from HCD's 2026 table, which programs may fit and why, the price they could pay with and without deferred help, a Habitat for Humanity of OC check against its published criteria, and next steps. Then "How a lender sees this family": personal tips on debt-to-income, credit score tiers, cash needed and steady income, each with a number to aim for.
 
 **2. Together (a nonprofit or city).**
 
 1. **The home:** cost lines from the lane's example deal (ASSUMPTION), plus a schedule-slip slider that adds holding costs per month.
 2. **The family:** the legal affordable housing cost by income group (H&SC 50052.5) from HCD's 2026 Orange County income limits, turned into a price at the Freddie Mac rate.
 3. **City levers and Build Days:** land offered, fees waived, delay, and a planner for sweat-equity hours.
+   Program ideas a city or nonprofit can start, each with the lever it pulls, a checked Orange County example or a note that none was verified, and a first step.
 4. **The stack:** buyer programs (CalHFA MyHome, Santa Ana, Garden Grove, Anaheim, County MAP, Dream For All) checked against city and income, each card saying how much it would close. Project funds marked confirmed or unconfirmed.
 5. **Rates:** the gap at 5% to 9%, and what the move from 7.40% (8 Oct) to 7.18% (5 Nov) did.
-**3. Give (a donor or business).** What a gift pays for, line by line, share of the gap and homes closed per $1 million. Honest tax notes, and giving kept apart from investing.
+**3. Give (donors, businesses and pillars of the community).** What a gift pays for, line by line, share of the gap and homes closed per $1 million. Ways to give time, professional skills, materials and money, and a pledge planner that shows what a pledge does. Honest tax notes, and giving kept apart from investing.
 
 **Sources and assumptions,** under every tab: every source with its status and date.
 
