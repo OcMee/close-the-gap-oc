@@ -379,8 +379,8 @@ function intro() {
   const letters = [
     ["OC", "Orange County", "Where the people who work here can live here."],
     ["M", "Mortgage", "A way in for working families. Ready."],
-    ["E", "Equity", "Homes that build wealth and stay affordable. Together."],
     ["E", "Education", "Classes, counseling and sweat equity. Ready and Together."],
+    ["E", "Equity", "Homes that build wealth and stay affordable. Together."],
     ["D", "Design", "The plan that puts it together, with every number sourced. Give."],
   ];
   return el("section", { class: "intro" },
@@ -391,7 +391,7 @@ function intro() {
     el("div", { class: "acronym" },
       el("p", { class: "acronym-title" }, "What ", el("b", { text: "OCMEED" }), " stands for"),
       el("ol", { class: "letters" }, letters.map(([l, w, d]) => el("li", {}, el("span", { class: "l", text: l }), el("span", { class: "w", text: w }), el("span", { class: "d", text: d })))),
-      el("p", { class: "byline" }, "Orange County Mortgage, Equity and Education, ", el("em", { text: "by Design." }), " Affordable homes do not happen by accident.")));
+      el("p", { class: "byline" }, "Orange County Mortgage, Education and Equity, ", el("em", { text: "by Design." }), " Affordable homes do not happen by accident.")));
 }
 const panel = (id, ...kids) => el("div", { id: `panel-${id}`, role: "tabpanel", "aria-labelledby": `tab-${id}`, hidden: id !== "ready" }, ...kids);
 document.getElementById("main").append(intro(),
