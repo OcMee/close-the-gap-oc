@@ -22,7 +22,7 @@ Three one-pagers that tell one story. The Ramos family, Frank and Bright Supply 
 
 Deferred help has no monthly payment, so the Ramos family can now pay about **$479,000** with the same monthly cost.
 
-The Ready tab also checks Habitat for Humanity of OC: their income fits the $55,850 to $166,300 range for four, their $500 of monthly debts is 5.1% of income (Habitat needs under 10%), and as a lower-income family they would owe 250 sweat-equity hours per adult on a new home.
+The Ready tab also checks Habitat for Humanity of OC: their income fits the $55,850 to $166,300 range for four, their $500 of monthly debts is 5.1% of income (Habitat's homebuyer guide asks for under 10%), their $2,700 rent is 27% of income, so they would show need another way, such as being unable to buy at market rate, and as a lower-income family they would owe 250 sweat-equity hours per adult on a new home.
 
 **What she gets is a plan, not a promise.** The tool marks every rule it could not confirm, such as whether the two programs combine. It says plainly: early check only; the program staff decide.
 
