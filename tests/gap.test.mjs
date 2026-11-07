@@ -207,3 +207,12 @@ test("set-aside: count, discount, resale rule", () => {
   assert.ok(r.monthlyDiscounted < r.monthlyMarket);
   assert.ok(r.resaleRule.startsWith("30%"));
 });
+
+test("ADU speed: days saved turn into home-years and rent", () => {
+  const r = g.aduSpeed({ requests: 365, currentDays: 120, targetDays: 30, rent: 2000 });
+  assert.equal(r.daysSaved, 90);
+  near(r.homeYears, 90);
+  near(r.rentValue, 90 * 12 * 2000);
+  assert.ok(r.overLaw && r.meetsLaw);
+  assert.equal(g.aduSpeed({ currentDays: 20, targetDays: 30 }).daysSaved, 0);
+});
