@@ -861,6 +861,26 @@ const CAUSES = [
   ["build", "Build Day materials", "Lumber, paint and tools for a community Build Day."],
   ["classes", "Homebuyer classes", "Free classes in English, Spanish and Vietnamese."],
 ];
+// GIVE: donate a car. Habitat OC's vehicle page, read 7 Nov 2026, sends donors to its vehicle donation partner.
+function carSection() {
+  const link = (href, text) => el("a", { href, target: "_blank", rel: "noopener noreferrer", text });
+  return section("car", "3. Donate: your car", "Donate a car. It helps build a home.", "Upgrading your car? The old one can become part of a local family's home.",
+    el("div", { class: "car" },
+      el("div", { class: "car-main" },
+        el("ol", { class: "car-steps" },
+          el("li", {}, el("b", { text: "Open Habitat OC's vehicle page. " }), "It sends you to Habitat's vehicle donation partner to arrange the donation."),
+          el("li", {}, el("b", { text: "Have the title (pink slip) ready. " }), "Cars, trucks and other vehicles are accepted; the partner confirms what it takes."),
+          el("li", {}, el("b", { text: "Tell the DMV within 5 days. " }), "File a Notice of Transfer and Release of Liability so tickets and tolls stop being yours."),
+          el("li", {}, el("b", { text: "Keep Form 1098-C. " }), "If the car sells for more than $500, the tax deduction is usually the sale price, not the blue-book value. Not tax advice; ask your tax preparer.")),
+        el("p", { class: "car-cta" }, el("a", { class: "chip", href: "https://habitatoc.org/support-us/donate-a-vehicle/", target: "_blank", rel: "noopener noreferrer", text: "Donate a vehicle at Habitat OC \u2192" })),
+        el("p", { class: "note" }, "Sources: ", link("https://habitatoc.org/support-us/donate-a-vehicle/", "Habitat OC, Donate a Vehicle"), "; ", link("https://www.irs.gov/pub/irs-pdf/p4303.pdf", "IRS Publication 4303"), "; ", link("https://www.dmv.ca.gov/portal/vehicle-registration/titles/title-transfers-and-changes/", "California DMV, title transfers"), ". Checked 7 Nov 2026.")),
+      el("aside", { class: "car-side" },
+        el("h3", { text: "Families need cars too" }),
+        el("p", { text: "A broken car can cost a job, and a job is what qualifies a family for a mortgage. Habitat sells donated vehicles to fund homes; it does not hand them to families." }),
+        el("p", {}, tag("unknown"), " We do not know an Orange County program that gives donated cars to working families."),
+        el("p", {}, tag("assumption"), " Idea for a city or nonprofit: a small car-repair fund for families in the Ready program, so one repair bill does not undo two years of saving."))));
+}
+
 function donateSection() {
   const D = S.donate;
   const preview = el("div", { class: "impact" });
@@ -1086,7 +1106,7 @@ introEl = intro();
 document.getElementById("main").append(introEl,
   panel("ready", learnSection(), readySection(), docsSection(), borrowerSection(), atlasSection()),
   panel("together", storyStrip(), hero(), homeSection(), leversSection(), proposalsSection(), aduSection(), ideasSection(), familySection(), stackSection(), rateSection()),
-  panel("give", donateSection(), eventsSection(), giveSection(), pillarsSection()),
+  panel("give", donateSection(), carSection(), eventsSection(), giveSection(), pillarsSection()),
   sourcesSection());
 document.getElementById("tabs").before(langSwitch());
 showTab = tabs([["ready", "1. Ready"], ["together", "2. Together"], ["give", "3. Give"]]);

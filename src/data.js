@@ -136,7 +136,7 @@ export const IDEAS = [
 export const GIVE_WAYS = [
   { kind: "Time", items: ["Build Days on a Habitat OC site", "Mentor a family through escrow", "Teach a money or homebuyer class"] },
   { kind: "Skills", items: ["Attorneys: contracts and title questions", "Engineers and architects: plan reviews and repairs", "Lenders and agents: free homebuyer workshops", "Accountants: tax help for first-time buyers"] },
-  { kind: "Resources", items: ["Building materials and appliances to a Habitat ReStore", "A lot, a building or office space", "Company volunteer days"] },
+  { kind: "Resources", items: ["A car, truck or RV you no longer need (Habitat OC vehicle donation)", "Building materials and appliances to a Habitat ReStore", "A lot, a building or office space", "Company volunteer days"] },
   { kind: "Money", items: ["Close one home's gap", "Fund a down payment loan pool", "Match your employees' gifts"] },
 ];
 
