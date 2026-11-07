@@ -488,3 +488,19 @@ a { color: #1a1a1a; text-decoration-color: var(--orange); text-decoration-thickn
 @media (max-width: 900px) { .pm { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .pm-pin circle { transition: none; } }
 .pm-region { text-anchor: middle; } .pm-county { text-anchor: middle; }
+
+/* Demo: the pitch deck */
+#tabs button.tab-plain { padding: 6px 18px; }
+.deck { margin-top: 16px; border-radius: 14px; overflow: hidden; background: #1a1a1a; aspect-ratio: 16 / 9; }
+.deck:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+.deck-stage, .deck-stage img, .deck-stage video { display: block; width: 100%; height: 100%; }
+.deck-stage img, .deck-stage video { object-fit: contain; background: #1a1a1a; }
+.deck-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin-top: 12px; }
+.deck-count { font-weight: 700; font-size: 16px; }
+.deck-dl { margin-left: auto; display: inline-flex; align-items: center; text-decoration: none; }
+.deck-thumbs { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.deck-thumbs button { padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; background: none; cursor: pointer; }
+.deck-thumbs button[aria-current="true"] { border-color: var(--orange); }
+.deck-thumbs button:focus-visible { outline: 3px solid var(--orange); outline-offset: 2px; }
+.deck-thumbs img { display: block; width: 100%; height: auto; }
+@media (max-width: 700px) { .deck-thumbs { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
