@@ -216,3 +216,15 @@ test("ADU speed: days saved turn into home-years and rent", () => {
   assert.ok(r.overLaw && r.meetsLaw);
   assert.equal(g.aduSpeed({ currentDays: 20, targetDays: 30 }).daysSaved, 0);
 });
+
+test("project gap: cost minus what the family can pay, less confirmed funds", () => {
+  const base = { costPerHome: 535000, tier: "lower", bedrooms: 3, ratePct: 7.18, assume: ASSUME };
+  const none = g.projectGap({ ...base, fundsPerHome: 0 });
+  assert.ok(none.price > 100000 && none.price < 535000, String(none.price));
+  near(none.gapBefore, 535000 - none.price);
+  assert.equal(none.status, "over25");
+  const most = g.projectGap({ ...base, fundsPerHome: none.gapBefore * 0.8 });
+  assert.equal(most.status, "under25");
+  near(most.openPct, 20, 0.01);
+  assert.equal(g.projectGap({ ...base, fundsPerHome: 1e7 }).status, "funded");
+});
